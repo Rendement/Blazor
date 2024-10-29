@@ -1,0 +1,72 @@
+@typeparam TValue
+@inherits Microsoft.AspNetCore.Components.Forms.InputSelect<TValue>
+
+@SelectContent
+
+@code {
+
+
+    private bool _isMultipleSelect = false; // Define the _isMultipleSelect field
+
+    private RenderFragment? SelectContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "select");
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            builder.AddAttribute(2, "name", NameAttributeValue);
+        }
+        if (!string.IsNullOrEmpty(CssClass))
+        {
+            builder.AddAttribute(3, "class", CssClass);
+        }
+        builder.AddAttribute(4, "multiple", _isMultipleSelect);
+
+        if (_isMultipleSelect)
+        {
+            builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
+            builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<TValue?>(this, SetCurrentValueAsStringArray, default));
+            builder.SetUpdatesAttributeName("value");
+        }
+        else
+        {
+            builder.AddAttribute(7, "value", CurrentValueAsString);
+            builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<TValue?>(this, __value => CurrentValue = __value, default));
+            builder.SetUpdatesAttributeName("value");
+        }
+
+        builder.AddElementReferenceCapture(9, __selectReference => Element = __selectReference);
+        builder.AddContent(10, ChildContent);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => SelectContent = CreateComponent();
+
+    private void SetCurrentValueAsStringArray(TValue? values)
+    {
+
+        CurrentValue = typeof(TValue).IsArray ? (TValue)(object)(values as object[] ?? Array.Empty<object>()) : default(TValue)!;
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        _isMultipleSelect = typeof(TValue).IsArray;
+        RenderComponent();
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+       _isMultipleSelect = typeof(TValue).IsArray;
+        RenderComponent();
+        await base.OnParametersSetAsync();
+
+    }
+
+
+    
+} 

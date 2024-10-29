@@ -1,0 +1,62 @@
+
+@inherits Microsoft.AspNetCore.Components.Forms.InputText
+@inject Rendement.Blazor.UI.Interfaces.IStringService stringService
+
+@ChildContent
+
+@code {    
+
+    [Parameter]
+    public bool ToUpper { get; set; }
+    
+    [Parameter]
+    public bool ToLower { get; set; }
+
+    private RenderFragment? ChildContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            builder.AddAttribute(2, "name", NameAttributeValue);
+        }
+        if (!string.IsNullOrEmpty(CssClass))
+        {
+            builder.AddAttribute(3, "class", CssClass);
+        }
+        builder.AddAttribute(4, "type", "text");
+        builder.AddAttribute(5, "value", StringConversion(CurrentValueAsString));
+        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = StringConversion(__value), CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => ChildContent = CreateComponent();
+
+    protected override async Task OnParametersSetAsync()
+    {
+       
+        RenderComponent();
+        await base.OnParametersSetAsync();
+
+    }
+
+    private string? StringConversion(string? value)
+    {
+        if (ToUpper)
+        {
+            return stringService.ToUpperCase(value);
+        }
+        if (ToLower)
+        {
+            return stringService.ToLowerCase(value);
+        }
+        return value;
+    }
+
+
+    
+}

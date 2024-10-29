@@ -1,0 +1,40 @@
+@inherits Microsoft.AspNetCore.Components.Forms.InputTextArea
+
+@ChildContent
+
+@code {    
+
+    private RenderFragment? ChildContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "textarea");
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            builder.AddAttribute(2, "name", NameAttributeValue);
+        }
+        if (!string.IsNullOrEmpty(CssClass))
+        {
+            builder.AddAttribute(3, "class", CssClass);
+        }
+        builder.AddAttribute(4, "value", CurrentValueAsString);
+        builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(6, __inputReference => Element = __inputReference);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => ChildContent = CreateComponent();
+
+    protected override async Task OnParametersSetAsync()
+    {
+       
+        RenderComponent();
+        await base.OnParametersSetAsync();
+
+    }
+
+
+    
+}

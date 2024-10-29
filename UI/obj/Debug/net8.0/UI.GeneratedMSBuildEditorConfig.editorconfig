@@ -1,0 +1,103 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows,browser
+build_property.RootNamespace = UI
+build_property.RootNamespace = UI
+build_property.ProjectDir = C:\Users\benja\OneDrive\Dev\Rendement\Blazor\UI\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\benja\OneDrive\Dev\Rendement\Blazor\UI
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReButton.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReCard.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReChoice.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVDaG9pY2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReContentEditable.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVDb250ZW50RWRpdGFibGUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReDate.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVEYXRlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReFile.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVGaWxlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReFragment.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVGcmFnbWVudC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReGrid.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVHcmlkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReMail.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVNYWlsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReNavbar.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVOYXZiYXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReNumber.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVOdW1iZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/RePage.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/RePager.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVQYWdlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/RePassword.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVQYXNzd29yZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReSelect.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVTZWxlY3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReTable.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVUYWJsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReTelephone.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVUZWxlcGhvbmUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReText.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVUZXh0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReTextarea.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVUZXh0YXJlYS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/ReTime.razor]
+build_metadata.AdditionalFiles.TargetPath = UmVUaW1lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/benja/OneDrive/Dev/Rendement/Blazor/UI/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

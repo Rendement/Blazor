@@ -1,0 +1,13 @@
+@page "/text"
+
+<h3>Text Page</h3>
+
+<p>This is a simple text page in Blazor.</p>
+
+<ReText ToUpper="true" @bind-Value="textOne" />
+
+@code {
+
+    private string textOne { get; set; } = "Hello World!";
+    // You can add your C# code here
+}

@@ -1,0 +1,139 @@
+@typeparam TValue where TValue : notnull
+@inherits Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+
+<div class="re-choice-container" @attributes="@AdditionalAttributes">
+
+    <button type="button" class="re-choice-button" @onclick="ToggleDropdown">
+        
+        @SelectedValue 
+
+        <i class="fa-solid fa-chevron-down"></i>
+    
+    </button>
+
+    <div class="re-choice-dropdown" style="display: @(IsDropdownOpen ? "flex" : "none")">
+
+        <input 
+        type="text" 
+        placeholder="Search..." 
+        class="re-choice-input" 
+        @bind-value="tempSearch"
+        @oninput="@((ChangeEventArgs e) => SearchList(e.Value?.ToString() ?? string.Empty))" />
+
+        <div class="re-choice-item" @onclick="() => SelectItem(default(TValue?))">Select an Item</div>
+        
+        @foreach(KeyValuePair<TValue, string> item in tempItems)
+        {
+            <div class="re-choice-item" @onclick="() => SelectItem(item.Key)">@item.Value</div>
+            
+        }
+
+    </div>
+
+</div>
+
+<style>
+
+    .re-choice-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .re-choice-button {
+        background-color: #f1f1f1;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px 20px;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .re-choice-dropdown {
+        position: absolute;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        max-height: 15em;
+        overflow-y: auto;
+        overflow-x: hidden !important;
+
+
+    }
+
+    .re-choice-input {        
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        flex: 1;
+    }
+
+    .re-choice-item {
+        width: 100%;
+        padding: 10px;
+        cursor: pointer;
+        flex:1;
+    }
+
+</style>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public Dictionary<TValue, string> Items { get; set; } = new Dictionary<TValue, string>();    
+
+    private string? SelectedValue { get; set; } = "Select an Item";
+
+    private Dictionary<TValue, string> tempItems = new Dictionary<TValue, string>();
+    private string? tempSearch { get; set; } = string.Empty;
+
+    private bool IsDropdownOpen { get; set; } = false;
+
+    private void ToggleDropdown()
+    {
+        IsDropdownOpen = !IsDropdownOpen;
+        tempSearch = string.Empty;
+        tempItems = Items;
+    }
+
+    private void SelectItem(TValue? key)
+    {
+        SelectedValue = key != null && !EqualityComparer<TValue>.Default.Equals(key, default(TValue)) ? Items[key] : "Select an Item";   
+        Value = key;
+        ValueChanged.InvokeAsync(Value);             
+        ToggleDropdown();
+    }
+
+    private void SearchList(string searchTerm)
+    {
+        tempItems = Items.Where(x => x.Value?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true).ToDictionary(x => x.Key, x => x.Value);  
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        tempItems = Items;
+        SelectedValue = Value != null && Items.ContainsKey(Value) ? Items[Value] : "Select an Item";
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        tempItems = Items;
+        SelectedValue = Value != null && Items.ContainsKey(Value) ? Items[Value] : "Select an Item";
+        await base.OnParametersSetAsync();
+    }
+
+    protected override bool TryParseValueFromString(string? value, out TValue result, out string validationErrorMessage)
+    {
+        // Implement parsing logic here
+        result = default!;
+        validationErrorMessage = string.Empty;
+        return true;
+    }
+}

@@ -1,0 +1,66 @@
+@typeparam TValue
+@inherits Microsoft.AspNetCore.Components.Forms.InputNumber<TValue>
+
+@ChildContent
+
+@code {
+
+private static readonly string _stepAttributeValue = GetStepAttributeValue();
+
+    private static string GetStepAttributeValue()
+    {
+        // Unwrap Nullable<T>, because InputBase already deals with the Nullable aspect
+        // of it for us. We will only get asked to parse the T for nonempty inputs.
+        var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+        if (targetType == typeof(int) ||
+            targetType == typeof(long) ||
+            targetType == typeof(short) ||
+            targetType == typeof(float) ||
+            targetType == typeof(double) ||
+            targetType == typeof(decimal))
+        {
+            return "any";
+        }
+        else
+        {
+            throw new InvalidOperationException($"The type '{targetType}' is not a supported numeric type.");
+        }
+    }
+
+    private RenderFragment? ChildContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "step", _stepAttributeValue);
+        builder.AddMultipleAttributes(2, AdditionalAttributes);
+        builder.AddAttribute(3, "type", "number");
+        if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            builder.AddAttribute(4, "name", NameAttributeValue);
+        }
+        if (!string.IsNullOrEmpty(CssClass))
+        {
+            builder.AddAttribute(5, "class", CssClass);
+        }
+        builder.AddAttribute(6, "value", CurrentValueAsString);
+        builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => ChildContent = CreateComponent();
+
+    protected override async Task OnInitializedAsync()
+    {
+        RenderComponent();
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        RenderComponent();
+        await base.OnParametersSetAsync();
+    }
+}

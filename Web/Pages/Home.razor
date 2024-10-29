@@ -1,0 +1,136 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+@* <ReButton class="re-btn" title="Click Me!" OnClick="() => OnClick(1)" >Click Me!</ReButton>
+<ReDate class="re-form" @bind-Value="dateOne" />
+<ReTime @bind-Value="timeOne" />
+<ReText @bind-Value="textOne" />
+<ReTextarea @bind-Value="textTwo" />
+<ReMail @bind-Value="emailOne" />
+<ReTelephone @bind-Value="phoneOne" />
+<ReNumber TValue="int?" @bind-Value="intOne" step="2" />
+<RePassword @bind-Value="password" />
+
+<ReFragment>Some Stuff here</ReFragment>
+
+
+
+<ReSelect TValue="string[]" @bind-Value="@strArrayOne">
+    @foreach(var arr in dictionaryOne){
+        <option value="@arr.Key.ToString()">@arr.Value</option>
+    }
+</ReSelect>
+
+
+
+@if(strArrayOne.Length == 0){
+    <p>No Items</p>
+}else{
+    @foreach(var str in strArrayOne){
+        @str
+    }
+}
+
+
+<ReSelect TValue="string" @bind-Value="@strOne">
+    <option value="">Select...</option>
+    @foreach(var arr in dictionaryOne){
+        <option value="@arr.Key.ToString()">@arr.Value</option>
+    }
+</ReSelect>
+@strOne
+
+
+<ReSelect TValue="int?[]" @bind-Value="@intArrayOne">
+    @foreach(var arr in dictionaryOne){
+        <option value="@arr.Key">@arr.Value</option>
+    }
+</ReSelect>
+
+
+
+@if(intArrayOne.Length == 0){
+    <p>No Items</p>
+}else{
+    @foreach(var i in intArrayOne){
+        @i
+    }
+}
+
+<ReSelect TValue="int?" @bind-Value="@intOne">
+    <option value="-1">Select...</option>
+    @foreach(var arr in dictionaryOne){
+        <option value="@arr.Key">@arr.Value</option>
+    }
+</ReSelect>
+@intOne *@
+
+
+
+
+@* <ReChoice Value="@choiceValue" ValueExpression="() => choiceValue" ValueChanged="(e) => choiceValue = e" TValue="int" Items="dictionaryOne" />
+<ReChoice @bind-Value="@choiceValue"  TValue="int" Items="dictionaryOne" />
+@choiceValue *@
+
+@code {
+@* 
+    private void SelectOnChange(string[] values)
+    {
+        strArrayOne = values ?? Array.Empty<string>();
+    }
+
+
+    private DateOnly? dateOne = DateOnly.FromDateTime(DateTime.Now);
+    private TimeOnly? timeOne = TimeOnly.FromDateTime(DateTime.Now);
+
+    private string? textOne = "Hello World!";
+    private string? textTwo = "Hello World!";
+
+    private string? emailOne = "john.doe@email.com";
+    private string? phoneOne = "123-456-7890";
+
+    private string? password;
+
+    private int? intOne = 2;
+    private int?[] intArrayOne = new int?[] { 2, 3 };
+
+    private string strOne = "3";
+
+    private string[] strArrayOne = ["3", "4"]; *@
+
+    
+    
+    
+    private Dictionary<int, string> dictionaryOne = new Dictionary<int, string>()
+    {
+        { 1, "One" },
+        { 2, "Two" },
+        { 3, "Three" },
+        { 4, "Four" },
+        { 5, "Five" },
+        { 6, "Six" },
+        { 7, "Seven" },
+        { 8, "Eight" },
+        { 9, "Nine" },
+        { 10, "Ten" }
+    };
+
+    
+    @* private int choiceValue = 6; *@
+
+    private void OnClick(int key)
+    {
+        Console.WriteLine($"Clicked! {key}");
+    }
+
+    
+    
+    protected override void OnInitialized()
+    {
+
+        
+        
+        
+    }
+}

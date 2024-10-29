@@ -1,0 +1,130 @@
+@page "/table"
+<h3>Table Page</h3>
+
+<ReTable Headers="@headers" Rows="@rows" class="test"></ReTable>
+
+@code{
+
+private Dictionary<string, RenderFragment> headers { get; set; } = new Dictionary<string, RenderFragment>();
+    
+    public List<Dictionary<string, RenderFragment>> rows { get; set; } = new List<Dictionary<string, RenderFragment>>();
+
+    private Dictionary<int, string> dictionaryOne = new Dictionary<int, string>()
+    {
+        { 1, "One" },
+        { 2, "Two" },
+        { 3, "Three" },
+        { 4, "Four" },
+        { 5, "Five" },
+        { 6, "Six" },
+        { 7, "Seven" },
+        { 8, "Eight" },
+        { 9, "Nine" },
+        { 10, "Ten" }
+    };
+
+    
+    @* private int choiceValue = 6; *@
+
+    private void OnClick(int key)
+    {
+        Console.WriteLine($"Clicked! {key}");
+    }
+
+    private void BuildTable(){
+
+        headers = new Dictionary<string, RenderFragment>
+        {
+            { "columnOne", builder => builder.AddContent(0, "Column 1") },
+            { "columnTwo", builder => builder.AddContent(0, "Column 2") },
+            { "columnThree", builder => builder.AddContent(0, "Column 3") },
+            { "columnFour", builder => builder.AddContent(0, "Delete") },
+        };
+
+        RenderFragment reButton = builder =>
+        {
+            builder.OpenComponent<ReButton>(0);
+            builder.AddAttribute(1, "title", "Click Me!");
+            builder.AddAttribute(2, "OnClick", EventCallback.Factory.Create(this, () => OnClick(0)));
+            builder.AddAttribute(3, "ChildContent", (RenderFragment)((builder2) =>
+            {
+                builder2.AddContent(0, "Click Me!");
+            }));
+            builder.CloseComponent();
+        };
+
+        RenderFragment fragment = builder =>
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "class", "btn btn-primary");
+            builder.AddContent(2, "Click Me!");
+            builder.CloseElement();
+        };
+
+        ReDate reDate = new ReDate();
+
+        rows.Add(new Dictionary<string, RenderFragment>
+        {
+            { "columnOne", reButton },
+            { "columnTwo", fragment },
+            { "columnThree", new RenderFragment(builder =>
+                {
+                    builder.OpenComponent<ReButton>(0);
+                    builder.AddAttribute(3, "ChildContent", (RenderFragment)((builder2) =>
+                    {
+                        builder2.AddContent(0, "This is a Button with a long Title!");
+                    }));
+                    builder.CloseComponent();
+                })
+            }
+        });
+
+        rows.Add(new Dictionary<string, RenderFragment>
+        {
+            { "columnOne", reButton },
+            { "columnTwo", fragment },
+            { "columnThree", new RenderFragment(builder => builder.AddContent(0, "Hello World!")) }
+        });
+
+        rows.Add(new Dictionary<string, RenderFragment>
+        {
+            { "columnOne", reButton },
+            { "columnTwo", fragment },
+            { "columnThree", new RenderFragment(builder => builder.AddContent(0, "Hello World!")) }
+        });
+
+        
+        foreach(var dict in dictionaryOne)
+        {
+
+            RenderFragment reButtonInner = builder =>
+            {
+                builder.OpenComponent<ReButton>(0);
+                builder.AddAttribute(1, "title", "Click Me!");
+                builder.AddAttribute(2, "OnClick", EventCallback.Factory.Create(this, () => OnClick(dict.Key)));
+                builder.AddAttribute(3, "class", "re-btn");
+                builder.AddAttribute(4, "ChildContent", (RenderFragment)((builder2) =>
+                {
+                    builder2.AddContent(0, "Click: " + dict.Key);
+                }));
+                builder.CloseComponent();
+            };
+
+            rows.Add(new Dictionary<string, RenderFragment>
+            {
+                { "columnOne", new RenderFragment(builder => builder.AddContent(0, reButtonInner)) },
+                { "columnTwo", new RenderFragment(builder => builder.AddContent(0, dict.Value)) },
+                { "columnThree", new RenderFragment(builder => builder.AddContent(0, "Hello World!")) }
+            });
+        }
+
+    }
+
+    protected override void OnInitialized()
+    {
+
+        BuildTable();
+        
+    }
+
+}

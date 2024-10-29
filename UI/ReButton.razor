@@ -1,0 +1,34 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+@ButtonContent
+
+@code{
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] 
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+    
+    private RenderFragment? ButtonContent { get; set; }
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "button");
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, OnClick));
+        builder.AddContent(3, ChildContent);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => ButtonContent = CreateComponent();
+    protected override async Task OnParametersSetAsync()
+    {
+        RenderComponent();
+        await base.OnParametersSetAsync();
+    }
+
+}

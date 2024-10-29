@@ -1,0 +1,45 @@
+@* Sidebar.razor *@
+
+@* <TopBar /> *@
+
+<div class="re-sidebar">
+    <ul class="re-sidebar-menu">
+        <li class="re-sidebar-item">
+            <a href="/">Home</a>
+        </li>
+        <li class="re-sidebar-item">
+            <a href="javascript:;" @onclick="@(e => NavigateToPage("table"))">Table</a>
+        </li>
+        <li class="re-sidebar-item">
+            <a href="javascript:;" @onclick="@(e => NavigateToPage("text"))">Text</a>
+        </li>
+        
+    </ul>
+</div>
+
+<main>
+    @ChildContent
+</main>
+
+@code {
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+
+    private void NavigateToPage(string page)
+    {
+        NavigationManager?.NavigateTo($"/{page}", forceLoad: true);
+    }
+
+    protected override void OnInitialized()
+    {
+        
+    }
+}
+
+<style>
+    
+</style>

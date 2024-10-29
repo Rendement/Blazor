@@ -1,0 +1,131 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Rendering
+
+@* https://stackoverflow.com/questions/73772761/blazor-pass-component-to-renderfragment *@
+
+
+@* @TableContent *@
+
+<div class="re-table-container">
+
+    <div class="re-table-row">
+
+        @foreach (var header in Headers)
+        {
+            
+            <div class="re-table-header">
+                @header.Value
+            </div>
+
+        }
+
+    </div>
+
+    @foreach (var row in Rows)
+    {
+        <div class="re-table-row">
+            @foreach (var header in Headers)
+            {
+                <div class="re-table-item">
+                    @if (row.TryGetValue(header.Key, out var item))
+                    {
+                        
+                        @item
+                        
+                    }
+                </div>
+            }
+        </div>
+
+    }
+
+
+</div>
+
+
+@code{
+
+    [Parameter, EditorRequired]
+    public Dictionary<string, RenderFragment> Headers { get; set; } = new Dictionary<string, RenderFragment>();
+
+    [Parameter]
+    public string CssClass { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public List<Dictionary<string, RenderFragment>> Rows { get; set; } = new List<Dictionary<string, RenderFragment>>();
+
+    [Parameter(CaptureUnmatchedValues = true)] 
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private RenderFragment? TableContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "div");        
+        if(AdditionalAttributes != null){
+
+            AdditionalAttributes["class"] = "re-table-container " + AdditionalAttributes["class"];            
+
+        }else{
+
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            AdditionalAttributes.Add("class", "re-table-container");
+        }
+
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+
+        @foreach (var header in Headers)
+        {
+
+            builder.OpenElement(3, "div");
+            builder.AddAttribute(4, "class", "re-table-row");
+            builder.OpenElement(5, "div");
+            builder.AddAttribute(6, "class", "re-table-header re-table-item");
+            builder.AddContent(7, header.Value);
+            builder.CloseElement();
+
+            foreach (var row in Rows)
+            {
+                builder.OpenElement(8, "div");
+                builder.AddAttribute(9, "class", "re-table-row");
+
+                if(row.TryGetValue(header.Key, out var item))
+                {
+                    builder.OpenElement(10, "div");
+                    builder.AddAttribute(11, "class", "re-table-item");
+                    builder.AddContent(12, item);
+                    builder.CloseElement();
+                }
+                else
+                {
+                    builder.OpenElement(13, "div");
+                    builder.AddAttribute(14, "class", "re-table-item");
+                    builder.CloseElement();
+                }
+
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => TableContent = CreateComponent();   
+
+    protected override async Task OnParametersSetAsync()
+    {
+        RenderComponent();
+        await base.OnParametersSetAsync();
+    }
+
+}
+
+<style>
+
+
+</style>

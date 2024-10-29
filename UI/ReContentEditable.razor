@@ -1,0 +1,25 @@
+@* https://stackoverflow.com/questions/78416814/blazor-contenteditable-data-binding
+
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<div id="inputEditor" contenteditable="true" tabindex="1" @ref=_inputReference @onkeydown="e => OnKeyDown(e)"></div>
+
+<div ... @onkeydown:preventDefault="true" @onkeydown:stopPropagation="true">@_input</div>
+
+@code {
+  private ElementReference _inputReference; // can be used for focus, etc.
+
+  protected override void OnAfterRender(bool firstRender) {
+    base.OnAfterRender(firstRender);
+
+    if (firstRender) {
+      _ = JSRuntime.InvokeVoidAsync("SetListenToInput", "inputEditor");
+    }
+  }
+
+  internal async Task OnKeyDown(KeyboardEventArgs e) {
+    // ... handle logic for OnAfterInput ....
+    await JSRuntime.InvokeVoidAsync("console.log", "OnKeyDown", e.Key);
+  }
+} *@
