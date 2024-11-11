@@ -1,0 +1,317 @@
+@use "sass:map";
+@use "sass:color";
+@use "sass:meta";
+@use "sass:math";
+@use "sass:selector";
+@use "sass:string";
+@use "sass:list";
+@import  "./fontawesome-free-6.6.0-web/css/all.min.css";
+
+
+$theme-colors: (
+  "primary": #007bff,
+  "secondary": #6c757d,
+  "success": #28a745,
+  "info": #17a2b8,
+  "warning": #ffc107,
+  "danger": #dc3545,
+  "light": #f8f9fa,
+  "dark": #343a40
+);
+
+$background-colors: (
+  "primary": map-get($theme-colors, "primary"),
+  "secondary": map-get($theme-colors, "secondary"),
+  "success": map-get($theme-colors, "success"),
+  "info": map-get($theme-colors, "info"),
+  "warning": map-get($theme-colors, "warning"),
+  "danger": map-get($theme-colors, "danger"),
+  "light": map-get($theme-colors, "light"),
+  "dark": map-get($theme-colors, "dark"),
+  "default": #fff,
+  "white": #fff,
+  "transparent": transparent,
+);
+
+$border-colors: (
+  "primary": color.scale(map-get($theme-colors, "primary"), $lightness: -35%),
+  "secondary": color.scale(map-get($theme-colors, "secondary"), $lightness: -35%),
+  "success": color.scale(map-get($theme-colors, "success"), $lightness: -35%),
+  "info": color.scale(map-get($theme-colors, "info"), $lightness: -35%),
+  "warning": color.scale(map-get($theme-colors, "warning"), $lightness: -35%),
+  "danger": color.scale(map-get($theme-colors, "danger"), $lightness: -35%),
+  "light": color.scale(map-get($theme-colors, "light"), $lightness: -35%),
+  "dark": color.scale(map-get($theme-colors, "dark"), $lightness: -35%),
+  "default": transparent,
+);
+
+$border-widths: (
+  "default": 1px,
+  "0": 0,
+  "1": 1px,
+  "2": 2px,
+  "3": 3px,
+  "4": 4px,
+  "5": 5px,
+);
+
+$border-radius: (
+  "default": .25rem,
+  "sm": .15rem,
+  "lg": .5rem,
+  "xl": 1rem,
+  "pill": 25%,
+  "circle": 50%,
+);
+
+$box-shadow: (
+  "sm": 0 .125rem .25rem rgba(0, 0, 0, .075),
+  "default": 0 .5rem 1rem rgba(0, 0, 0, .15),
+  "lg": 0 1rem 3rem rgba(0, 0, 0, .175),
+);
+
+$font-size-base: 1rem;
+$font-size-lg: $font-size-base * 1.25;
+$font-size-sm: $font-size-base * .875;
+
+$font-weight-normal: 400;
+$font-weight-bold: 700;
+
+$line-height-base: 1.5;
+$line-height-lg: 1.5;
+$line-height-sm: 1.5;
+
+$font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+
+
+$theme-colors: map.merge($theme-colors, (
+  "custom": #ff0000
+));
+
+input{
+
+    &.re-form{
+        border: 1px solid map-get($theme-colors, "custom");
+    }
+  
+}
+
+button{
+    &.re-btn{
+        padding: .5rem 1rem;
+        border-width: map-get($border-widths, "1");
+        border-style: solid;
+        border-color: map-get($border-colors, "default");
+        border-radius: map-get($border-radius, "default");
+        background-color: map-get($background-colors, "transparent");
+        color: map-get($theme-colors, "dark");
+    }
+}
+
+button:hover{
+    &.re-btn{
+        background-color: map-get($background-colors, "secondary");
+        color: map-get($theme-colors, "light");
+        cursor: pointer;
+    }
+}
+
+button:active{
+    &.re-btn{
+        background-color: map-get($background-colors, "primary");
+        color: map-get($theme-colors, "light");
+    }
+}
+
+button:disabled{
+    &.re-btn{
+        background-color: map-get($background-colors, "light");
+        color: map-get($theme-colors, "dark");
+        cursor: not-allowed;
+    }
+}
+
+div.re-table-container{
+
+    display: flex;
+    flex-direction: column;   
+    font-family: $font-family-sans-serif;
+    font-size: $font-size-base;
+
+    div.re-table-row{
+
+      padding: .5rem;
+      display: flex;
+      flex: 1 1 0;
+      flex-direction: row;
+      border-bottom: 1px solid black;
+
+      div.re-table-header{
+        
+        flex: 1 1 0;
+       
+       font-weight: bold;
+      }
+
+      div.re-table-item{        
+        flex: 1 1 0;        
+        align-content: center;
+      }
+
+
+    }
+
+    div.re-table-row:last-child{
+        border-bottom: none;
+    }
+
+    div.re-table-row:hover{
+        background-color: map-get($background-colors, "secondary");
+    }
+
+}
+
+.re-flex{
+    display: flex;
+
+    &.re-flex-row{
+        flex-direction: row;
+    }
+
+    &.re-flex-column{
+        flex-direction: column;
+    }
+
+    &.re-flex-center{
+        justify-content: center;
+        align-items: center;
+    }
+
+    &.re-flex-space-between{
+        justify-content: space-between;
+    }
+
+    &.re-flex-space-around{
+        justify-content: space-around;
+    }
+
+    &.re-flex-space-evenly{
+        justify-content: space-evenly;
+    }
+
+    &.re-flex-wrap{
+        flex-wrap: wrap;
+    }
+
+    &.re-flex-wrap-reverse{
+        flex-wrap: wrap-reverse;
+    }
+
+    &.re-flex-nowrap{
+        flex-wrap: nowrap;
+    }
+
+    &.re-flex-start{
+        justify-content: flex-start;
+    }
+
+    &.re-flex-end{
+        justify-content: flex-end;
+    }
+
+    &.re-flex-align-start{
+        align-items: flex-start;
+    }
+
+    &.re-flex-align-end{
+        align-items: flex-end;
+    }
+
+    &.re-flex-align-center{
+        align-items: center;
+    }
+
+    &.re-flex-align-baseline{
+        align-items: baseline;
+    }
+
+    &.re-flex-align-stretch{
+        align-items: stretch;
+    }
+
+    &.re-flex-justify-start{
+        justify-content: flex-start;
+    }
+
+    &.re-flex-justify-end{
+        justify-content: flex-end;
+    }
+
+    &.re-flex-justify-center{
+        justify-content: center;
+    }
+
+    &.re-flex-justify-between{
+        justify-content: space-between;
+    }
+
+    &.re-flex-justify-around{
+        justify-content: space-around;
+    }
+
+    &.re-flex-justify-evenly{
+        justify-content: space-evenly;
+    }
+
+    &.re-flex-grow-0{
+        flex-grow: 0;
+    }
+
+    &.re-flex-grow-1{
+        flex-grow: 1;
+    }
+
+    &.re-flex-grow-2{
+        flex-grow: 2;
+    }
+
+    &.re-flex-grow-3{
+        flex-grow: 3;
+    }
+
+    &.re-flex-grow-4{
+        flex-grow: 4;
+    }
+
+    &.re-flex-grow-5{
+        flex-grow: 5;
+    }
+
+    &.re-flex-shrink-0{
+        flex-shrink: 0;
+    }
+
+    &.re-flex-shrink-1{
+        flex-shrink: 1;
+    }
+
+    &.re-flex-shrink-2{
+        flex-shrink: 2;
+    }
+
+    &.re-flex-shrink-3{
+        flex-shrink: 3;
+    }
+
+    &.re-flex-shrink-4{
+        flex-shrink: 4;
+    }
+
+    &.re-flex-shrink-5{
+        flex-shrink: 5;
+    }
+    
+
+
+}

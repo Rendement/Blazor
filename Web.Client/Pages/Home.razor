@@ -4,4 +4,11 @@
 
 <h1>Hello, world!</h1>
 
+<ReTime @bind-Value="timeOne"></ReTime>
+
 Welcome to your new app.
+
+
+@code {
+    private TimeOnly? timeOne = TimeOnly.FromDateTime(DateTime.Now);
+}

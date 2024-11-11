@@ -1,0 +1,37 @@
+@using System.Globalization
+@inherits Microsoft.AspNetCore.Components.Forms.InputDate<TimeOnly?>
+
+@TimeContent
+
+@code {    
+
+    private RenderFragment? TimeContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        builder.AddAttribute(2, "type", "time");
+        if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            builder.AddAttribute(3, "name", NameAttributeValue);
+        }
+        builder.AddAttribute(4, "class", CssClass);
+        builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValue, "HH:mm:ss", CultureInfo.InvariantCulture));
+        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => TimeContent = CreateComponent();
+
+    protected override async Task OnParametersSetAsync()
+    {
+       RenderComponent();
+        await base.OnParametersSetAsync();
+
+    }
+
+    
+}
