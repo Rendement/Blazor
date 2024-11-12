@@ -4,11 +4,14 @@
 
 <h1>Hello, world!</h1>
 
-<ReTime @bind-Value="timeOne"></ReTime>
-
+<ReTime class="re-input" @bind-Value="timeOne"></ReTime>
+<ReDate class="re-input" @bind-Value="dateOne"></ReDate>
+<ReText class="re-input" @bind-Value="textOne" ToUpper="false" ToLower="true"></ReText>
 Welcome to your new app.
 
 
 @code {
     private TimeOnly? timeOne = TimeOnly.FromDateTime(DateTime.Now);
+    private DateOnly? dateOne = DateOnly.FromDateTime(DateTime.Now);
+    private string textOne = "Hello, World!";
 }

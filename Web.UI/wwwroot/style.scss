@@ -7,6 +7,10 @@
 @use "sass:list";
 @import  "./fontawesome-free-6.6.0-web/css/all.min.css";
 
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
 
 $theme-colors: (
   "primary": #007bff,
@@ -90,6 +94,16 @@ $theme-colors: map.merge($theme-colors, (
 ));
 
 input{
+
+    &.re-input{
+        padding: .5rem;
+        border-width: map-get($border-widths, "1");
+        border-style: solid;
+        border-color: map-get($border-colors, "dark");
+        border-radius: map-get($border-radius, "default");
+        font-family: $font-family-sans-serif;
+        font-size: $font-size-base;
+    }
 
     &.re-form{
         border: 1px solid map-get($theme-colors, "custom");
