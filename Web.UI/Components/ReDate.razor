@@ -1,0 +1,38 @@
+@inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>
+
+@DateContent
+
+@code {    
+
+    private RenderFragment? DateContent { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        builder.AddAttribute(2, "type", "date");
+        if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            builder.AddAttribute(3, "name", NameAttributeValue);
+        }
+        builder.AddAttribute(4, "class", CssClass);
+        builder.AddAttribute(5, "value", CurrentValueAsString);
+        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => DateContent = CreateComponent();
+
+    protected override async Task OnParametersSetAsync()
+    {
+       
+        RenderComponent();
+        await base.OnParametersSetAsync();
+
+    }
+
+
+    
+}
