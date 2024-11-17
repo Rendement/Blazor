@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rendement.Blazor.UI\rendement.blazor.ui.csproj" />
     <ProjectReference Include="..\Web.UI\web.ui.csproj" />
   </ItemGroup>
 
