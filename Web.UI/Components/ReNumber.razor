@@ -1,0 +1,61 @@
+@using System.Globalization
+@using Web.UI.Classes
+@typeparam TValue
+@inherits Microsoft.AspNetCore.Components.Forms.InputNumber<TValue?>
+
+@NumberContent
+
+@code {    
+
+    private RenderFragment? NumberContent { get; set; }
+
+    private NumberModifier numberModifier = new NumberModifier();
+
+    private string _stepAttribute = GetStepAttribute();
+
+    private static string GetStepAttribute()
+    {
+        var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+        if (targetType == typeof(int) ||
+            targetType == typeof(long) ||
+            targetType == typeof(short) ||
+            targetType == typeof(float) ||
+            targetType == typeof(double) ||
+            targetType == typeof(decimal))
+        {
+            return "any";
+        }
+        else
+        {
+            throw new InvalidOperationException($"The type '{targetType}' is not a supported numeric type.");
+        }
+    }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "step", _stepAttribute);
+        builder.AddMultipleAttributes(2, AdditionalAttributes);
+        builder.AddAttribute(3, "type", "number");
+        if (!string.IsNullOrEmpty(NameAttributeValue))
+        {
+            builder.AddAttribute(4, "name", NameAttributeValue);
+        }
+        builder.AddAttribute(5, "class", CssClass);
+        builder.AddAttribute(6, "value", BindConverter.FormatValue(CurrentValue, CultureInfo.InvariantCulture));
+        builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<TValue?>(this, __value => CurrentValue = __value, CurrentValue));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
+        builder.CloseElement();
+    };
+
+    private void RenderComponent() => NumberContent = CreateComponent();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        RenderComponent();
+        await base.OnParametersSetAsync();
+    }
+
+    
+}

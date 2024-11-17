@@ -1,9 +1,11 @@
 @inherits Microsoft.AspNetCore.Components.Forms.InputText
-@inject Rendement.Blazor.UI.Interfaces.IStringService stringService
+@using Web.UI.Classes
 
 @TextContent
 
-@code {    
+@code {   
+
+    private TextModifier textModifier = new TextModifier();
 
     [Parameter]
     public bool ToUpper { get; set; }
@@ -43,7 +45,7 @@
 
     }
     
-    protected override string? FormatValueAsString(string? value) => ToUpper ? stringService.ToUpperCase(value) : ToLower ? stringService.ToLowerCase(value) : value;
+    protected override string? FormatValueAsString(string? value) => ToUpper ? textModifier.ToUpper(value) : ToLower ? textModifier.ToLower(value) : value;
 
     protected override bool TryParseValueFromString(string? value, out string? result, out string validationErrorMessage)
     {

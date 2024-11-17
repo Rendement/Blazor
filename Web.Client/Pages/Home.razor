@@ -6,7 +6,12 @@
 
 <ReTime class="re-input" @bind-Value="timeOne"></ReTime>
 <ReDate class="re-input" @bind-Value="dateOne"></ReDate>
-<ReText class="re-input" @bind-Value="textOne" ToUpper="false" ToLower="true"></ReText>
+<ReText class="re-input" @bind-Value="textOne" ToUpper="false" ToLower="false"></ReText>
+<ReNumber class="re-input" @bind-Value="numberOne"></ReNumber>
+<ReNumber class="re-input" @bind-Value="numberTwo" step=".5"></ReNumber>
+<ReNumber class="re-input" @bind-Value="numberThree" step=".02"></ReNumber>
+<ReNumber class="re-input" @bind-Value="numberFour" step=".005"></ReNumber>
+<ReNumber class="re-input" @bind-Value="numberFive" step="2"></ReNumber>
 Welcome to your new app.
 
 
@@ -14,4 +19,14 @@ Welcome to your new app.
     private TimeOnly? timeOne = TimeOnly.FromDateTime(DateTime.Now);
     private DateOnly? dateOne = DateOnly.FromDateTime(DateTime.Now);
     private string textOne = "Hello, World!";
+
+    private int? numberOne { get; set; } = 1;
+
+    private double? numberTwo { get; set; } = 1.5;
+
+    private decimal? numberThree { get; set; } = 1.02m;
+
+    private float? numberFour { get; set; } = 1.005f;
+
+    private long? numberFive { get; set; } = 2L;
 }
