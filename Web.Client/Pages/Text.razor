@@ -1,0 +1,13 @@
+@page "/text"
+
+<PageTitle>Text</PageTitle>
+
+<h5>Text</h5>
+
+<ReText class="re-input" @bind-Value="textOne" ToUpper="false" ToLower="false"></ReText>
+
+@code {
+    
+    private string textOne = "Hello, World!";
+
+}

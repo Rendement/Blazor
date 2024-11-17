@@ -1,0 +1,13 @@
+@page "/number"
+
+<PageTitle>Number</PageTitle>
+
+<h5>Number</h5>
+
+<ReNumber class="re-input" @bind-Value="numberOne"></ReNumber>
+
+@code {
+    
+    private int? numberOne { get; set; } = 1;
+
+}

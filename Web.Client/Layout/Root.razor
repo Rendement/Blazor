@@ -1,0 +1,60 @@
+@inherits LayoutComponentBase
+<div class="page">
+
+    <div>
+        <Topbar />
+    </div>
+
+    <main class="main">
+
+        <div class="d-flex flex-row g-3">
+
+            
+                <Sidebar />
+            
+            
+            
+                <article class="article">
+
+                    <header>
+                        
+                    </header>
+
+                    <body>
+                        @Body
+                    </body>
+
+                    
+                    
+                </article>
+                
+            <Footer />
+    
+        </div>
+        
+    </main>
+
+</div>
+
+<style>
+
+
+    .main {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        margin-top: 2.5em;
+
+
+    }
+
+    .article {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        padding: .5em;
+    }
+
+    </style>
+
+

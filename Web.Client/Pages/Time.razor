@@ -1,0 +1,12 @@
+@page "/time"
+
+<PageTitle>Time</PageTitle>
+
+<h5>Time</h5>
+
+<ReTime class="re-input" @bind-Value="timeOne"></ReTime>
+
+@code {
+    private TimeOnly? timeOne = TimeOnly.FromDateTime(DateTime.Now);
+}
+

@@ -2,21 +2,11 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
-
-<ReTime class="re-input" @bind-Value="timeOne"></ReTime>
-<ReDate class="re-input" @bind-Value="dateOne"></ReDate>
-<ReText class="re-input" @bind-Value="textOne" ToUpper="false" ToLower="false"></ReText>
-<ReNumber class="re-input" @bind-Value="numberOne"></ReNumber>
-<ReNumber class="re-input" @bind-Value="numberTwo" step=".5"></ReNumber>
-<ReNumber class="re-input" @bind-Value="numberThree" step=".02"></ReNumber>
-<ReNumber class="re-input" @bind-Value="numberFour" step=".005"></ReNumber>
-<ReNumber class="re-input" @bind-Value="numberFive" step="2"></ReNumber>
-Welcome to your new app.
+<h5>Home</h5>
 
 
 @code {
-    private TimeOnly? timeOne = TimeOnly.FromDateTime(DateTime.Now);
+    
     private DateOnly? dateOne = DateOnly.FromDateTime(DateTime.Now);
     private string textOne = "Hello, World!";
 

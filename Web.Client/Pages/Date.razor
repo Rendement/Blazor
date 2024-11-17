@@ -1,0 +1,12 @@
+@page "/date"
+
+<PageTitle>Date</PageTitle>
+
+<h5>Date</h5>
+
+<ReDate class="re-input" @bind-Value="dateOne"></ReDate>
+
+@code {
+    
+    private DateOnly? dateOne = DateOnly.FromDateTime(DateTime.Now);
+}
