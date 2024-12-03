@@ -13,9 +13,12 @@
 <CodeBlock Language="csharp">@codeDate</CodeBlock>
 
 
+<Calendar @bind-Value="date"></Calendar>
+@date
+
 @code {
     
-    private DateOnly? date = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly? date = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
     private string dateToString = string.Empty;
 
     private string dateRendement = @"<ReDate class=""re-input"" @bind-Value=""date""></ReDate>";
