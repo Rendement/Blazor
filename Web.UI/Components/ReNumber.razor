@@ -1,3 +1,4 @@
+#nullable enable
 @using System.Globalization
 @using Web.UI.Classes
 @typeparam TValue
@@ -15,7 +16,7 @@
 
     private static string GetStepAttribute()
     {
-        var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+        var targetType = Nullable.GetUnderlyingType(typeof(TValue?)) ?? typeof(TValue?);
         if (targetType == typeof(int) ||
             targetType == typeof(long) ||
             targetType == typeof(short) ||

@@ -32,6 +32,8 @@
         currentMonth = currentDate.Month;
         currentYear = currentDate.Year;
 
+        currentDay = -1;
+
         UpdateDays();
     }
 
@@ -42,6 +44,8 @@
 
         currentMonth = currentDate.Month;
         currentYear = currentDate.Year;
+
+        currentDay = -1;
 
         UpdateDays();
     }
@@ -65,6 +69,8 @@
 
         currentMonth = Convert.ToInt32(e.Value);
 
+        currentDay = -1;
+
         UpdateDays();
     }
 
@@ -75,6 +81,8 @@
         CurrentValue = DateOnly.FromDateTime(currentDate);
 
         currentYear = Convert.ToInt32(e.Value);
+
+        currentDay = -1;
 
         UpdateDays();
     }
@@ -96,6 +104,8 @@
             currentYear = CurrentValue.Value.Year;
             currentMonth = CurrentValue.Value.Month;
             currentDay = CurrentValue.Value.Day;
+
+            currentDate = new DateTime(currentYear, currentMonth, currentDay);
 
             UpdateDays();
 
