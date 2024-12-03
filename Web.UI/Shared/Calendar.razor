@@ -1,0 +1,77 @@
+@using System.Globalization
+
+@functions {
+    private DateTime currentDate = DateTime.Now;
+    private int currentYear => currentDate.Year;
+    private int currentMonth => currentDate.Month;
+    private string currentMonthName => DateTimeFormatInfo.CurrentInfo.GetMonthName(currentMonth);
+    private int daysInMonth => DateTime.DaysInMonth(currentYear, currentMonth);
+    private DateTime firstDayOfMonth => new DateTime(currentYear, currentMonth, 1);
+    private DayOfWeek firstDayOfWeek => firstDayOfMonth.DayOfWeek;
+
+    private void PreviousMonth()
+    {
+        currentDate = currentDate.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        currentDate = currentDate.AddMonths(1);
+    }
+}
+
+<div class="calendar">
+    <div class="calendar-header">
+        <button @onclick="PreviousMonth">Previous</button>
+        <span>@currentMonthName @currentYear</span>
+        <button @onclick="NextMonth">Next</button>
+    </div>
+    <div class="calendar-body">
+        <div class="calendar-weekdays">
+            @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                <div class="calendar-weekday">@day</div>
+            }
+        </div>
+        <div class="calendar-days">
+            @for (int i = 0; i < (int)firstDayOfWeek; i++)
+            {
+                <div class="calendar-day empty"></div>
+            }
+            @for (int day = 1; day <= daysInMonth; day++)
+            {
+                <div class="calendar-day">@day</div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .calendar {
+        width: 300px;
+        margin: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .calendar-body {
+        display: flex;
+        flex-direction: column;
+    }
+    .calendar-weekdays, .calendar-days {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .calendar-weekday, .calendar-day {
+        width: calc(100% / 7);
+        text-align: center;
+        padding: 5px;
+    }
+    .calendar-day.empty {
+        background-color: #f0f0f0;
+    }
+</style>

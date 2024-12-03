@@ -8,33 +8,36 @@
     <main class="main">
 
         <div class="d-flex flex-row g-3">
+            
+            <Sidebar />
 
-            
-                <Sidebar />
-            
-            
-            
+            <body>
+
+                <Header />
+
                 <article class="article">
 
-                    <header>
-                        
-                    </header>
+                    @Body
 
-                    <body>
-                        @Body
-                    </body>
-
-                    
-                    
                 </article>
-                
-            <Footer />
+
+                <Footer >                    
+                    @footerText
+                </Footer>
+
+            </body>    
     
         </div>
         
     </main>
 
 </div>
+
+@code{
+    
+    private string footerText = @"© " + @DateTime.Now.Year.ToString() + " - Rendement.Blazor";//alt 0169 © to get the copyright symbol
+
+}
 
 <style>
 

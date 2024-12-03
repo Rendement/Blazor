@@ -4,11 +4,22 @@
 
 <h5>Date</h5>
 
-<ReDate class="re-input" @bind-Value="dateOne"></ReDate>
+<ReDate class="re-input" @bind-Value="@date"></ReDate>
 
+@date?.ToString("MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture)
+
+
+<CodeBlock Language="csharp">@dateRendement</CodeBlock>
+<CodeBlock Language="csharp">@codeDate</CodeBlock>
 
 
 @code {
     
-    private DateOnly? dateOne = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly? date = DateOnly.FromDateTime(DateTime.Now);
+    private string dateToString = string.Empty;
+
+    private string dateRendement = @"<ReDate class=""re-input"" @bind-Value=""date""></ReDate>";
+    private string codeDate = @"private DateOnly? date = DateOnly.FromDateTime(DateTime.Now);";
+
+    
 }
