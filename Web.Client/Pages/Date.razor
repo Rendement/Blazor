@@ -9,12 +9,12 @@
 @date?.ToString("MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture)
 
 
-<CodeBlock Language="csharp">@dateRendement</CodeBlock>
+@* <CodeBlock Language="csharp">@dateRendement</CodeBlock>
 <CodeBlock Language="csharp">@codeDate</CodeBlock>
 
 
-<Calendar @bind-Value="date"></Calendar>
-@date
+<ReCalendar @bind-Value="date"></ReCalendar>
+@date *@
 
 @code {
     

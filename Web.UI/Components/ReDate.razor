@@ -21,8 +21,9 @@
         builder.SetUpdatesAttributeName("value");
         builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
         builder.CloseElement();
-    };
+    }; 
 
+    private DateOnly? date = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
     private void RenderComponent() => DateContent = CreateComponent();
 
     protected override async Task OnParametersSetAsync()
@@ -31,8 +32,7 @@
         RenderComponent();
         await base.OnParametersSetAsync();
 
-    }
-
+    } 
 
     
 }

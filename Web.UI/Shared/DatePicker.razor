@@ -1,7 +1,7 @@
 @using System.Globalization
 @inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>
 
-@functions {
+@code {
     
     private int currentYear { get; set; } = DateTime.Now.Year;
     private int currentMonth { get; set; } = DateTime.Now.Month;
@@ -12,6 +12,9 @@
     private int daysInMonth => DateTime.DaysInMonth(currentYear, currentMonth);
     private DateTime firstDayOfMonth => new DateTime(currentYear, currentMonth, 1);
     private DayOfWeek firstDayOfWeek => firstDayOfMonth.DayOfWeek;
+
+    [Parameter]
+    public EventCallback<bool> OnDateSelected { get; set; }
 
     private IDictionary<int, string> months = DateTimeFormatInfo.CurrentInfo.MonthNames
     .Where(m => !string.IsNullOrEmpty(m))
@@ -58,6 +61,8 @@
         CurrentValueAsString = CurrentValue?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         currentDay = day;
+
+        OnDateSelected.InvokeAsync(true);
 
     }
 
