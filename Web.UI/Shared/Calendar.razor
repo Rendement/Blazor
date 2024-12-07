@@ -1,0 +1,317 @@
+@using System.Globalization
+@inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>
+
+    @CalendarFragment
+
+@code {
+
+    private int currentYear { get; set; } = DateTime.Now.Year;
+    private int currentMonth { get; set; } = DateTime.Now.Month;
+    private int currentDay { get; set; } = DateTime.Now.Day;
+
+    private DateTime currentDate = DateTime.Now;
+    private string currentMonthName => DateTimeFormatInfo.CurrentInfo.GetMonthName(currentMonth);
+    private int daysInMonth => DateTime.DaysInMonth(currentYear, currentMonth);
+    private DateTime firstDayOfMonth => new DateTime(currentYear, currentMonth, 1);
+    private DayOfWeek firstDayOfWeek => firstDayOfMonth.DayOfWeek;
+
+    [Parameter]
+    public EventCallback<DateOnly?> OnDateSelected { get; set; }
+
+    private IDictionary<int, string> months = DateTimeFormatInfo.CurrentInfo.MonthNames.Where(m => !string.IsNullOrEmpty(m)).Select((m, i) => new { i, m }).ToDictionary(x => x.i + 1, x => x.m);
+
+    private IDictionary<int, string> years = Enumerable.Range(DateTime.Now.Year - 125, 251).ToDictionary(x => x, x => x.ToString());
+
+    private IDictionary<int, string> days = Enumerable.Range(1, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToDictionary(x => x, x => x.ToString());
+
+    private void PreviousMonth()
+    {
+        SetCalendarMonth(-1);
+    }
+
+    private void NextMonth()
+    {
+        SetCalendarMonth(1);
+    }
+
+    private void MonthOnChange(ChangeEventArgs e)
+    { 
+        SetCalendarOnChange(new DateTime(currentYear, Convert.ToInt32(e.Value), 1), currentYear, Convert.ToInt32(e.Value), e);
+        UpdateDays();
+    }
+
+    private void YearOnChange(ChangeEventArgs e)
+    {
+        SetCalendarOnChange(new DateTime(Convert.ToInt32(e.Value), currentMonth, 1), Convert.ToInt32(e.Value), currentMonth, e);
+        UpdateDays();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();        
+        if (!CurrentValue.HasValue)
+        {
+            CurrentValue = DateOnly.FromDateTime(DateTime.Now);
+        }
+
+        SetCalendarOnInit(CurrentValue.Value.Year, CurrentValue.Value.Month, CurrentValue.Value.Day);
+        RenderComponent();
+    }
+
+    private void SetCalendarMonth(int month)
+    {        
+        //CurrentValue = DateOnly.FromDateTime(currentDate);
+        currentDate = currentDate.AddMonths(month);
+        currentMonth = currentDate.Month;
+        currentYear = currentDate.Year;
+        currentDay = -1;
+
+        UpdateDays();
+    }
+    private void SetCalendarOnInit(int year, int month, int day){
+        
+        currentYear = year;
+        currentMonth = month;
+        currentDay = day;
+        currentDate = new DateTime(currentYear, currentMonth, currentDay);
+        UpdateDays();
+
+    }
+
+    private void SetCalendarOnChange(DateTime date, int year, int month, ChangeEventArgs e){        
+        
+        //CurrentValue = DateOnly.FromDateTime(date);
+        currentYear = year;   
+        currentMonth = month;     
+        currentDate = date;
+        currentDay = -1;
+        UpdateDays();
+
+    }
+
+    private void DaySelected(int day)
+    {
+
+        CurrentValue = DateOnly.FromDateTime(new DateTime(currentYear, currentMonth, day));
+        CurrentValueAsString = CurrentValue?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        currentDay = day;
+        OnDateSelected.InvokeAsync(CurrentValue);
+
+    }
+
+    private void UpdateDays()
+    {
+        days = Enumerable.Range(1, DateTime.DaysInMonth(currentYear, currentMonth)).ToDictionary(x => x, x => x.ToString());
+    }
+
+
+    private RenderFragment? CalendarFragment {get; set;}
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "div");
+        
+        builder.AddMultipleAttributes(1, AdditionalAttributes);
+        builder.AddAttribute(2, "class", (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : "") + (!string.IsNullOrEmpty(CurrentValueAsString) ? "calendar" : ""));//this to make the date placholder change color from grey to black
+
+
+            @* //start of calendar header            
+            builder.OpenElement(4, "div");        
+            builder.AddAttribute(5, "class", "calendar-header");
+
+                //start of prev button//start of prev button
+                builder.OpenElement(6, "button");
+                builder.AddAttribute(7, "type", "button");
+                builder.AddAttribute(8, "class", "btn-iterate");
+                builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, PreviousMonth));
+                builder.AddContent(10, "Prev");
+                builder.CloseComponent();
+                //end of prev button
+
+                //start of month select
+                builder.OpenElement(11, "select");
+                builder.AddAttribute(12, "class", "select-month");
+                builder.AddAttribute(13, "value", currentMonth);
+                builder.AddAttribute(14, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, MonthOnChange));
+
+                    @foreach(var month in months.Select(m => new { Key = m.Key, Value = m.Value }))
+                    {
+                        builder.OpenElement(15, "option");
+                        builder.AddAttribute(16, "value", month.Key);
+                        builder.AddContent(17, month.Value);
+                        builder.CloseElement();
+                    }
+
+                builder.CloseElement(); 
+                //end of month select
+
+                //start of year select
+                builder.OpenElement(19, "select");
+                builder.AddAttribute(20, "class", "select-year");
+                builder.AddAttribute(21, "value", currentYear);
+                builder.AddAttribute(22, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, YearOnChange));
+
+                    @foreach(var year in years.Select(y => new { Key = y.Key, Value = y.Value }))
+                    {
+                        builder.OpenElement(23, "option");
+                        builder.AddAttribute(24, "value", year.Key);
+                        builder.AddContent(25, year.Value);
+                        builder.CloseElement();
+                    
+                }
+
+        builder.CloseElement();
+        //end of year select
+
+        //start of next button
+        builder.OpenElement(27, "button");
+        builder.AddAttribute(28, "type", "button");
+        builder.AddAttribute(29, "class", "btn-iterate");
+        builder.AddAttribute(30, "onclick", EventCallback.Factory.Create(this, NextMonth));
+        builder.AddContent(31, "Next");
+        builder.CloseElement();
+        //end of next button
+
+        //end of calendar header
+        builder.CloseElement();
+
+        //start of calendar body
+        builder.OpenElement(32, "div");
+        builder.AddAttribute(33, "class", "calendar-body");
+
+        //start of calendar weekdays
+        builder.OpenElement(34, "div");
+        builder.AddAttribute(35, "class", "calendar-weekdays");
+
+        foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+        {
+            builder.OpenElement(36, "div");
+            builder.AddAttribute(37, "title", DateTimeFormatInfo.CurrentInfo.GetDayName((DayOfWeek)day));
+            builder.AddAttribute(38, "class", "calendar-weekday");
+            builder.AddContent(39, DateTimeFormatInfo.CurrentInfo.GetAbbreviatedDayName((DayOfWeek)day).Substring(0, 1));
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+        //end of calendar weekdays
+
+        //start of calendar days
+        builder.OpenElement(40, "div");
+        builder.AddAttribute(41, "class", "calendar-days");
+
+        for (int i = 0; i < (int)firstDayOfWeek; i++)
+        {
+            builder.OpenElement(42, "div");
+            builder.AddAttribute(43, "class", "calendar-day empty");
+            builder.CloseElement();
+        }
+
+        foreach (var day in days.Select(d => new { Key = d.Key, Value = d.Value }))
+        {
+            builder.OpenElement(44, "button");
+            builder.AddAttribute(45, "type", "button");
+            builder.AddAttribute(46, "class", "calendar-day");
+            builder.AddAttribute(47, "title", day.Value);
+            builder.AddAttribute(48, "aria-readonly", true);
+            builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DaySelected(day.Key)));
+            if (day.Key == currentDay && currentMonth == (CurrentValue.HasValue ? CurrentValue.Value.Month : currentMonth) && currentYear == (CurrentValue.HasValue ? CurrentValue.Value.Year : currentYear))
+            {
+                builder.AddContent(50, (RenderFragment)(builder =>
+            {
+                        builder.OpenElement(51, "strong");
+                        builder.AddContent(52, day.Value);
+                        builder.CloseElement();
+                    }));
+            }
+            else
+            {
+                builder.AddContent(53, day.Value);
+            }
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+        //end of calendar days
+
+        builder.CloseElement();
+        //end of calendar body *@
+
+
+
+
+
+
+        builder.CloseElement();
+
+
+    };
+
+    private void RenderComponent() => CalendarFragment = CreateComponent();
+
+
+}
+
+
+
+
+
+<style>
+    .calendar {
+        width: 18em;
+        margin: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: .25em;
+        background-color: #fff;
+    }
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .calendar-body {
+        display: flex;
+        flex-direction: column;
+    }
+    .calendar-weekdays, .calendar-days {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .calendar-weekday, .calendar-day {
+        width: calc(100% / 7);
+        text-align: center;
+        padding: 5px;
+    }
+    .calendar-day.empty {
+    @* background-color: #f0f0f0; *@
+    }
+
+    .calendar-day {
+        padding: .25em;
+        border: none;
+        background-color: transparent;
+        border-radius: .25em;
+    }
+
+    .calendar-day:not(.empty):hover {
+        cursor: pointer;
+        background-color: lightblue;
+        border-radius: .25em;
+    }
+
+    .select-month, .select-year {
+        padding: .25em;
+        border: 1px solid #ccc;
+        border-radius: .25em;
+    }
+
+    .btn-iterate {
+        padding: .25em;
+        border: none;
+        background-color: transparent;
+    }
+
+    .btn-iterate:hover {
+        cursor: pointer;
+        background-color: lightblue;
+        border-radius: .25em;
+    }
+</style>

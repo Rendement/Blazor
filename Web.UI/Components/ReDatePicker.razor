@@ -1,39 +1,35 @@
 @inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>
 @using web.ui.Shared
 
-<div @onfocusout="OnFocusOut" @onfocusin="OnFocusIn"  style="min-height:fit-content;padding: 1em; border:solid 1px black;">
+<div class="re-datepicker-wrapper">
 
-    <ReText @bind-Value="CurrentValueAsString" ></ReText>
 
-    <div @onfocusin="OnFocusIn">
-    @if(_isFocused)
-    {
-        <DatePicker @bind-Value="CurrentValue" OnDateSelected="OnDateSelected"></DatePicker>
-    }
-    </div>
+
+
+
+
+
+<DateScroll @bind-Value="CurrentValue" Min="new DateOnly(2020, 1, 1)" Max="new DateOnly(2025, 12, 31)" ></DateScroll>
+
+
+    <Calendar CurrentValue="@CurrentValue" ></Calendar>
 
 </div>
 
+
 @code {
     
-    private bool _isFocused = false;
-    private void OnFocusIn()
+    private int currentYear { get; set; } = DateTime.Now.Year;
+    private int currentMonth { get; set; } = DateTime.Now.Month;
+    private int currentDay { get; set; } = DateTime.Now.Day;
+
+    private DateTime currentDate = DateTime.Now;
+
+    private void OnDateSelected(DateOnly? date)
     {
-        _isFocused = true;
-        Console.WriteLine("Date.razor OnFocusIn");
+        CurrentValue = date;
     }
 
-    private void OnFocusOut()
-    {
-        _isFocused = false;
-        Console.WriteLine("Date.razor OnFocusOut");
-    }
-
-    private void OnDateSelected(bool isDateSelected)
-    {
-        _isFocused = false;
-        Console.WriteLine("Date.razor OnDateSelected");
-    }
     
     // This is a code block
 

@@ -1,0 +1,295 @@
+﻿@using System.Globalization
+@inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>;
+
+@DateFragment
+
+<style>
+    .fe-datepicker-container {
+        display: flex;
+        flex-direction: row;
+        background-color: var(--fe-bg);
+        background-clip: padding-box;
+        border-radius: var(--fe-border-radius);
+        border: var(--fe-border);
+        align-content: center;
+        padding: .75em;
+    }
+
+        .fe-datepicker-container:focus-within {
+            outline: none;
+            box-shadow: var(--fe-box-shadow);
+        }
+
+        .fe-datepicker-container > select {
+            height: var(--fe-h);
+            border: none;
+            padding: .325em;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            text-indent: 1px;
+            text-overflow: '';
+            width: revert;
+            outline: none;
+            border-radius: 0;
+            box-shadow: none !important;
+            background-color: var(--fe-bg);
+        }
+
+            .fe-datepicker-container > select[readonly] {
+                border: none !important;
+            }
+
+            .fe-datepicker-container > select:has(option:first-child:checked)[readonly] {
+                color: inherit !important;
+            }
+
+            .fe-datepicker-container > select:focus-visible {
+                /* outline: none;
+                background-color: #F5F4F0;
+                font-weight: 900;
+                -webkit-appearance: auto;
+                -moz-appearance: button-arrow-down; */
+
+
+                background-color: #F5F4F0;
+                border-radius: .25em;
+
+            }
+
+
+
+                .fe-datepicker-container > select:focus-visible option {
+                    font-weight: bold;
+                    background-color: var(--fe-color-lightgray);
+                }
+
+    .fe-datepicker-value {
+        top: -.6rem;
+        font-size: 12px;
+        background-color: var(--fe-bg);
+        opacity: 1;
+        z-index: 1;
+        color: var(--fe-color);
+        border-radius: var(--fe-border-radius);
+        -moz-border-radius: inherit;
+        -webkit-border-radius: inherit;
+    }
+
+    .fe-datepicker-container > select:first-child {
+        border-top-left-radius: var(--fe-border-radius);
+        border-bottom-left-radius: var(--fe-border-radius);
+        flex: 2;
+    }
+
+    .fe-datepicker-container > select:nth-child(2n+1) {
+        flex: 2;
+    }
+
+    .fe-datepicker-container > select:last-child {
+        border-top-right-radius: var(--fe-border-radius);
+        border-bottom-right-radius: var(--fe-border-radius);
+        flex: 2;
+    }
+
+    .fe-floating:focus-within:has(.fe-datepicker-container) {
+        outline: none;
+    }
+
+    .fe-datepicker-button{
+        border:none;
+        background-color: transparent;
+
+    }
+</style>
+
+@code
+{
+    [Parameter]
+    public EventCallback CalendarOnClick { get; set; }
+
+    private RenderFragment? DateFragment { get; set; }
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        if (FloatingLabel)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "fe-floating fe-floating-datetime " + FloatingClass);
+
+        }
+
+        builder.OpenElement(2, "div");
+        builder.AddAttribute(3, "class", "fe-datepicker-container");
+
+        // Create the month select element
+        builder.OpenElement(2, "select");
+        builder.AddMultipleAttributes(3, AdditionalAttributes);
+        builder.AddAttribute(3, "value", _month);
+        builder.AddAttribute(4, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnMonthChanged));
+        foreach (var month in _months)
+        {
+            builder.OpenElement(6, "option");
+            builder.AddAttribute(7, "value", month.Key);
+            builder.AddContent(8, month.Value);
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+
+        // Create the day select element
+        builder.OpenElement(9, "select");
+        builder.AddMultipleAttributes(3, AdditionalAttributes);
+        builder.AddAttribute(10, "value", _day);
+        builder.AddAttribute(11, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnDayChanged));
+        for (int i = 1; i <= DateTime.DaysInMonth(_year, _month); i++)
+        {
+            builder.OpenElement(12, "option");
+            builder.AddAttribute(13, "value", i);
+            builder.AddContent(14, i);
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+
+        // Create the year select element
+        builder.OpenElement(15, "select");
+        builder.AddMultipleAttributes(3, AdditionalAttributes);
+        builder.AddAttribute(16, "value", _year);
+        builder.AddAttribute(17, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnYearChanged));
+        for (int i = (DateTime.Now.Year + AdditionalYears); i >= 1900; i--)
+        {
+            builder.OpenElement(18, "option");
+            builder.AddAttribute(19, "value", i);
+            builder.AddAttribute(21, "selected", i == _year);
+            builder.AddContent(20, i);
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+
+        builder.OpenElement(22, "button");
+        builder.AddAttribute(23, "type", "button");
+        builder.AddAttribute(24, "class", "fe-datepicker-button");
+        builder.AddAttribute(25, "onclick", EventCallback.Factory.Create(this, CalendarOnClick));
+        builder.AddContent(26, "📅");
+        builder.CloseElement();
+        
+        
+        
+
+
+
+        builder.CloseElement();
+
+        if (FloatingLabel)
+        {
+            builder.OpenElement(15, "div");
+            builder.AddAttribute(16, "class", "fe-label fe-datepicker-value ");
+
+            builder.AddContent(17, Label);
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+    };
+
+    private void RenderComponent() => DateFragment = CreateComponent();
+
+    private IDictionary<int, string> _months = new Dictionary<int, string>
+    {
+        { 1, "01" },
+        { 2, "02" },
+        { 3, "03" },
+        { 4, "04" },
+        { 5, "05" },
+        { 6, "06" },
+        { 7, "07" },
+        { 8, "08" },
+        { 9, "09" },
+        { 10, "10" },
+        { 11, "11" },
+        { 12, "12" }
+    };
+
+    private int _day = 1;
+    private int _year = DateTime.Now.Year;
+    private int _month = 1;
+    private DateOnly? _value;
+
+    private bool _isTyping = false;
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public int ReadonlyStyle { get; set; } = 0;
+
+    [Parameter]
+    public bool FloatingLabel { get; set; }
+
+    [Parameter]
+    public string FloatingClass { get; set; }
+
+    [Parameter]
+    public int AdditionalYears { get; set; } = 125;
+
+    protected override void OnInitialized()
+    {
+        if (CurrentValue.HasValue)
+        {
+            _year = CurrentValue.Value.Year;
+            _month = CurrentValue.Value.Month;
+            _day = CurrentValue.Value.Day;
+        }
+        else
+        {
+            _year = DateTime.Now.Year;
+            _month = DateTime.Now.Month;
+            _day = DateTime.Now.Day;
+        }
+        RenderComponent();
+        base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+    private void OnMonthChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int month))
+        {
+            _month = month;
+            OnChange();
+            //RenderComponent();
+        }
+
+
+
+    }
+
+    private void OnDayChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int day))
+        {
+            _day = day;
+            OnChange();
+            //RenderComponent();
+        }
+    }
+
+    private void OnYearChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int year))
+        {
+            _year = year;
+            OnChange();
+            //RenderComponent();
+        }
+    }
+
+    private void OnChange()
+    {
+
+        _value = new DateOnly(_year, _month, _day);
+        CurrentValueAsString = _value.ToString();
+    }
+
+}

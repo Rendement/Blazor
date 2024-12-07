@@ -3,7 +3,7 @@
 <PageTitle>Date Picker</PageTitle>
 
 <h3>Date Picker</h3>
-
+<ReDatePicker @bind-Value="selectedDate"></ReDatePicker>
 <ReDatePicker @bind-Value="selectedDate" ></ReDatePicker>
 
 <p>Selected Date: @(selectedDate.HasValue ? selectedDate.Value.ToShortDateString() : "No date selected")</p>
