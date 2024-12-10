@@ -1,113 +1,35 @@
-﻿@using System.Globalization
-@inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>;
+@* @using System.Globalization
+@using Microsoft.AspNetCore.Components.Rendering
+@inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>
 
 @DateFragment
 
-<style>
-    .fe-datepicker-container {
-        display: flex;
-        flex-direction: row;
-        background-color: var(--fe-bg);
-        background-clip: padding-box;
-        border-radius: var(--fe-border-radius);
-        border: var(--fe-border);
-        align-content: center;
-        padding: .75em;
-    }
-
-        .fe-datepicker-container:focus-within {
-            outline: none;
-            box-shadow: var(--fe-box-shadow);
-        }
-
-        .fe-datepicker-container > select {
-            height: var(--fe-h);
-            border: none;
-            padding: .325em;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            text-indent: 1px;
-            text-overflow: '';
-            width: revert;
-            outline: none;
-            border-radius: 0;
-            box-shadow: none !important;
-            background-color: var(--fe-bg);
-        }
-
-            .fe-datepicker-container > select[readonly] {
-                border: none !important;
-            }
-
-            .fe-datepicker-container > select:has(option:first-child:checked)[readonly] {
-                color: inherit !important;
-            }
-
-            .fe-datepicker-container > select:focus-visible {
-                /* outline: none;
-                background-color: #F5F4F0;
-                font-weight: 900;
-                -webkit-appearance: auto;
-                -moz-appearance: button-arrow-down; */
-
-
-                background-color: #F5F4F0;
-                border-radius: .25em;
-
-            }
 
 
 
-                .fe-datepicker-container > select:focus-visible option {
-                    font-weight: bold;
-                    background-color: var(--fe-color-lightgray);
-                }
-
-    .fe-datepicker-value {
-        top: -.6rem;
-        font-size: 12px;
-        background-color: var(--fe-bg);
-        opacity: 1;
-        z-index: 1;
-        color: var(--fe-color);
-        border-radius: var(--fe-border-radius);
-        -moz-border-radius: inherit;
-        -webkit-border-radius: inherit;
-    }
-
-    .fe-datepicker-container > select:first-child {
-        border-top-left-radius: var(--fe-border-radius);
-        border-bottom-left-radius: var(--fe-border-radius);
-        flex: 2;
-    }
-
-    .fe-datepicker-container > select:nth-child(2n+1) {
-        flex: 2;
-    }
-
-    .fe-datepicker-container > select:last-child {
-        border-top-right-radius: var(--fe-border-radius);
-        border-bottom-right-radius: var(--fe-border-radius);
-        flex: 2;
-    }
-
-    .fe-floating:focus-within:has(.fe-datepicker-container) {
-        outline: none;
-    }
-
-    .fe-datepicker-button{
-        border:none;
-        background-color: transparent;
-
-    }
-</style>
 
 @code
 {
+
+    
+
+
     [Parameter]
     public EventCallback CalendarOnClick { get; set; }
 
     private RenderFragment? DateFragment { get; set; }
+
+    private int SelectedMonth
+    {
+        get => CurrentValue?.Month ?? 1;
+        set
+        {
+            if (CurrentValue.HasValue)
+            {
+                CurrentValue = new DateOnly(CurrentValue.Value.Year, value, CurrentValue.Value.Day);
+            }
+        }
+    }
 
     private RenderFragment CreateComponent() => builder =>
     {
@@ -126,6 +48,7 @@
         builder.AddMultipleAttributes(3, AdditionalAttributes);
         builder.AddAttribute(3, "value", _month);
         builder.AddAttribute(4, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, OnMonthChanged));
+        
         foreach (var month in _months)
         {
             builder.OpenElement(6, "option");
@@ -133,6 +56,7 @@
             builder.AddContent(8, month.Value);
             builder.CloseElement();
         }
+
         builder.CloseElement();
 
         // Create the day select element
@@ -188,6 +112,17 @@
             builder.CloseElement();
         }
     };
+
+    private void GetMonths(RenderTreeBuilder builder)
+    {
+        foreach (var month in _months)
+        {
+            builder.OpenElement(6, "option");
+            builder.AddAttribute(7, "value", month.Key);
+            builder.AddContent(8, month.Value);
+            builder.CloseElement();
+        }
+    }
 
     private void RenderComponent() => DateFragment = CreateComponent();
 
@@ -293,3 +228,103 @@
     }
 
 }
+
+
+<style>
+    .fe-datepicker-container {
+        display: flex;
+        flex-direction: row;
+        background-color: var(--fe-bg);
+        background-clip: padding-box;
+        border-radius: var(--fe-border-radius);
+        border: var(--fe-border);
+        align-content: center;
+        padding: .75em;
+    }
+
+        .fe-datepicker-container:focus-within {
+            outline: none;
+            box-shadow: var(--fe-box-shadow);
+        }
+
+        .fe-datepicker-container > select {
+            height: var(--fe-h);
+            border: none;
+            padding: .325em;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            text-indent: 1px;
+            text-overflow: '';
+            width: revert;
+            outline: none;
+            border-radius: 0;
+            box-shadow: none !important;
+            background-color: var(--fe-bg);
+        }
+
+            .fe-datepicker-container > select[readonly] {
+                border: none !important;
+            }
+
+            .fe-datepicker-container > select:has(option:first-child:checked)[readonly] {
+                color: inherit !important;
+            }
+
+            .fe-datepicker-container > select:focus-visible {
+                /* outline: none;
+                background-color: #F5F4F0;
+                font-weight: 900;
+                -webkit-appearance: auto;
+                -moz-appearance: button-arrow-down; */
+
+
+                background-color: #F5F4F0;
+                border-radius: .25em;
+
+            }
+
+
+
+                .fe-datepicker-container > select:focus-visible option {
+                    font-weight: bold;
+                    background-color: var(--fe-color-lightgray);
+                }
+
+    .fe-datepicker-value {
+        top: -.6rem;
+        font-size: 12px;
+        background-color: var(--fe-bg);
+        opacity: 1;
+        z-index: 1;
+        color: var(--fe-color);
+        border-radius: var(--fe-border-radius);
+        -moz-border-radius: inherit;
+        -webkit-border-radius: inherit;
+    }
+
+    .fe-datepicker-container > select:first-child {
+        border-top-left-radius: var(--fe-border-radius);
+        border-bottom-left-radius: var(--fe-border-radius);
+        flex: 2;
+    }
+
+    .fe-datepicker-container > select:nth-child(2n+1) {
+        flex: 2;
+    }
+
+    .fe-datepicker-container > select:last-child {
+        border-top-right-radius: var(--fe-border-radius);
+        border-bottom-right-radius: var(--fe-border-radius);
+        flex: 2;
+    }
+
+    .fe-floating:focus-within:has(.fe-datepicker-container) {
+        outline: none;
+    }
+
+    .fe-datepicker-button{
+        border:none;
+        background-color: transparent;
+
+    }
+</style> *@

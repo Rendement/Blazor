@@ -1,66 +1,68 @@
 @using System.Globalization
-@inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>
+@inherits Microsoft.AspNetCore.Components.ComponentBase
 
-    @CalendarFragment
+@CalendarFragment
 
 @code {
+
+    [Parameter]
+    public EventCallback<DateOnly> OnDateSelected { get; set; }
+
+    [Parameter]
+    public int? Day { get; set; } = null;
+
+    [Parameter]
+    public int? Month { get; set; } = null;
+
+    [Parameter]
+    public int? Year { get; set; } = null;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     private int currentYear { get; set; } = DateTime.Now.Year;
     private int currentMonth { get; set; } = DateTime.Now.Month;
     private int currentDay { get; set; } = DateTime.Now.Day;
-
     private DateTime currentDate = DateTime.Now;
-    private string currentMonthName => DateTimeFormatInfo.CurrentInfo.GetMonthName(currentMonth);
-    private int daysInMonth => DateTime.DaysInMonth(currentYear, currentMonth);
+    private IDictionary<int, string> days = Enumerable.Range(1, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToDictionary(x => x, x => x.ToString());
+    private IDictionary<int, string> months = DateTimeFormatInfo.CurrentInfo.MonthNames.Where(m => !string.IsNullOrEmpty(m)).Select((m, i) => new { i, m }).ToDictionary(x => x.i + 1, x => x.m);
+    private IDictionary<int, string> years = Enumerable.Range(DateTime.Now.Year - 125, 251).ToDictionary(x => x, x => x.ToString());
+    
     private DateTime firstDayOfMonth => new DateTime(currentYear, currentMonth, 1);
     private DayOfWeek firstDayOfWeek => firstDayOfMonth.DayOfWeek;
 
-    [Parameter]
-    public EventCallback<DateOnly?> OnDateSelected { get; set; }
-
-    private IDictionary<int, string> months = DateTimeFormatInfo.CurrentInfo.MonthNames.Where(m => !string.IsNullOrEmpty(m)).Select((m, i) => new { i, m }).ToDictionary(x => x.i + 1, x => x.m);
-
-    private IDictionary<int, string> years = Enumerable.Range(DateTime.Now.Year - 125, 251).ToDictionary(x => x, x => x.ToString());
-
-    private IDictionary<int, string> days = Enumerable.Range(1, DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month)).ToDictionary(x => x, x => x.ToString());
-
-    private void PreviousMonth()
-    {
-        SetCalendarMonth(-1);
-    }
-
-    private void NextMonth()
-    {
-        SetCalendarMonth(1);
-    }
-
-    private void MonthOnChange(ChangeEventArgs e)
-    { 
-        SetCalendarOnChange(new DateTime(currentYear, Convert.ToInt32(e.Value), 1), currentYear, Convert.ToInt32(e.Value), e);
-        UpdateDays();
-    }
-
-    private void YearOnChange(ChangeEventArgs e)
-    {
-        SetCalendarOnChange(new DateTime(Convert.ToInt32(e.Value), currentMonth, 1), Convert.ToInt32(e.Value), currentMonth, e);
-        UpdateDays();
-    }
-
     protected override void OnInitialized()
     {
-        base.OnInitialized();        
-        if (!CurrentValue.HasValue)
-        {
-            CurrentValue = DateOnly.FromDateTime(DateTime.Now);
-        }
 
-        SetCalendarOnInit(CurrentValue.Value.Year, CurrentValue.Value.Month, CurrentValue.Value.Day);
+        base.OnInitialized();
+        SetCalendarOnInit(Year, Month, Day);
         RenderComponent();
     }
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        SetCalendarOnInit(Year, Month, Day);
+        RenderComponent();
+    }
+
+    private void SetCalendarOnInit(int? year, int? month, int? day){
+        
+        currentYear = year ?? DateTime.Now.Year;
+        currentMonth = month ?? DateTime.Now.Month;
+        currentDay = day ?? DateTime.Now.Day;
+        currentDate = new DateTime(currentYear, currentMonth, currentDay);
+        UpdateDays();
+
+    }
+
+
+    private void PreviousMonth() => SetCalendarMonth(-1);
+
+    private void NextMonth() => SetCalendarMonth(1);
+    
     private void SetCalendarMonth(int month)
     {        
-        //CurrentValue = DateOnly.FromDateTime(currentDate);
         currentDate = currentDate.AddMonths(month);
         currentMonth = currentDate.Month;
         currentYear = currentDate.Year;
@@ -68,19 +70,14 @@
 
         UpdateDays();
     }
-    private void SetCalendarOnInit(int year, int month, int day){
-        
-        currentYear = year;
-        currentMonth = month;
-        currentDay = day;
-        currentDate = new DateTime(currentYear, currentMonth, currentDay);
-        UpdateDays();
 
-    }
+    private void MonthOnChange(ChangeEventArgs e) => SetCalendarOnChange(new DateTime(currentYear, Convert.ToInt32(e.Value), 1), currentYear, Convert.ToInt32(e.Value), e);
+    
+    private void YearOnChange(ChangeEventArgs e) => SetCalendarOnChange(new DateTime(Convert.ToInt32(e.Value), currentMonth, 1), Convert.ToInt32(e.Value), currentMonth, e);
+    
 
     private void SetCalendarOnChange(DateTime date, int year, int month, ChangeEventArgs e){        
         
-        //CurrentValue = DateOnly.FromDateTime(date);
         currentYear = year;   
         currentMonth = month;     
         currentDate = date;
@@ -91,38 +88,56 @@
 
     private void DaySelected(int day)
     {
-
-        CurrentValue = DateOnly.FromDateTime(new DateTime(currentYear, currentMonth, day));
-        CurrentValueAsString = CurrentValue?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         currentDay = day;
-        OnDateSelected.InvokeAsync(CurrentValue);
+        OnDateSelected.InvokeAsync(DateOnly.FromDateTime(new DateTime(currentYear, currentMonth, day)));
 
     }
 
-    private void UpdateDays()
+    private void ClearDate()
     {
-        days = Enumerable.Range(1, DateTime.DaysInMonth(currentYear, currentMonth)).ToDictionary(x => x, x => x.ToString());
+        currentDay = DateTime.Now.Day;
+        currentMonth = DateTime.Now.Month;
+        currentYear = DateTime.Now.Year;
+        currentDate = DateTime.Now;
+        OnDateSelected.InvokeAsync(default);
+        UpdateDays();
     }
 
+    private void SetToday()
+    {
+        currentDay = DateTime.Now.Day;
+        currentMonth = DateTime.Now.Month;
+        currentYear = DateTime.Now.Year;
+        currentDate = DateTime.Now;
+        OnDateSelected.InvokeAsync(DateOnly.FromDateTime(DateTime.Now));
+        UpdateDays();
+        
+    }
+
+    private void UpdateDays() => days = Enumerable.Range(1, DateTime.DaysInMonth(currentYear, currentMonth)).ToDictionary(x => x, x => x.ToString());
+    
 
     private RenderFragment? CalendarFragment {get; set;}
+
+    private void RenderComponent() => CalendarFragment = CreateComponent();
 
     private RenderFragment CreateComponent() => builder =>
     {
         builder.OpenElement(0, "div");
         
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "class", (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : "") + (!string.IsNullOrEmpty(CurrentValueAsString) ? "calendar" : ""));//this to make the date placholder change color from grey to black
+        builder.AddAttribute(2, "class", "calendar " + (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : ""));
+ 
 
-
-            @* //start of calendar header            
+            //start of calendar header            
             builder.OpenElement(4, "div");        
             builder.AddAttribute(5, "class", "calendar-header");
 
                 //start of prev button//start of prev button
                 builder.OpenElement(6, "button");
                 builder.AddAttribute(7, "type", "button");
-                builder.AddAttribute(8, "class", "btn-iterate");
+                builder.AddAttribute(8, "class", "calendar-header-action btn-iterate");
+                builder.AddAttribute(9, "tabindex", "0");
                 builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, PreviousMonth));
                 builder.AddContent(10, "Prev");
                 builder.CloseComponent();
@@ -130,7 +145,7 @@
 
                 //start of month select
                 builder.OpenElement(11, "select");
-                builder.AddAttribute(12, "class", "select-month");
+                builder.AddAttribute(12, "class", "calendar-header-action select-month");
                 builder.AddAttribute(13, "value", currentMonth);
                 builder.AddAttribute(14, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, MonthOnChange));
 
@@ -147,7 +162,7 @@
 
                 //start of year select
                 builder.OpenElement(19, "select");
-                builder.AddAttribute(20, "class", "select-year");
+                builder.AddAttribute(20, "class", "calendar-header-action select-year");
                 builder.AddAttribute(21, "value", currentYear);
                 builder.AddAttribute(22, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, YearOnChange));
 
@@ -166,7 +181,8 @@
         //start of next button
         builder.OpenElement(27, "button");
         builder.AddAttribute(28, "type", "button");
-        builder.AddAttribute(29, "class", "btn-iterate");
+        builder.AddAttribute(29, "class", "calendar-header-action btn-iterate");
+        builder.AddAttribute(29, "tabindex", "0");
         builder.AddAttribute(30, "onclick", EventCallback.Factory.Create(this, NextMonth));
         builder.AddContent(31, "Next");
         builder.CloseElement();
@@ -212,15 +228,16 @@
             builder.AddAttribute(46, "class", "calendar-day");
             builder.AddAttribute(47, "title", day.Value);
             builder.AddAttribute(48, "aria-readonly", true);
+            builder.AddAttribute(49, "tabindex", "0");
             builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DaySelected(day.Key)));
-            if (day.Key == currentDay && currentMonth == (CurrentValue.HasValue ? CurrentValue.Value.Month : currentMonth) && currentYear == (CurrentValue.HasValue ? CurrentValue.Value.Year : currentYear))
+            if (day.Key == currentDay && currentMonth == Month && currentYear == Year)
             {
                 builder.AddContent(50, (RenderFragment)(builder =>
-            {
-                        builder.OpenElement(51, "strong");
-                        builder.AddContent(52, day.Value);
-                        builder.CloseElement();
-                    }));
+                {
+                    builder.OpenElement(51, "strong");
+                    builder.AddContent(52, day.Value);
+                    builder.CloseElement();
+                }));
             }
             else
             {
@@ -231,27 +248,35 @@
         builder.CloseElement();
         //end of calendar days
 
+        builder.OpenElement(54, "div");
+        builder.AddAttribute(55, "class", "calendar-footer");
+
+        builder.OpenElement(6, "button");
+        builder.AddAttribute(7, "type", "button");
+        builder.AddAttribute(8, "class", "btn-iterate");
+        builder.AddAttribute(9, "tabindex", "0");
+        builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, ClearDate));
+        builder.AddContent(10, "Clear");
+        builder.CloseComponent();
+
+        builder.OpenElement(6, "button");
+        builder.AddAttribute(7, "type", "button");
+        builder.AddAttribute(8, "class", "btn-iterate");
+        builder.AddAttribute(9, "tabindex", "0");
+        builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, SetToday));
+        builder.AddContent(10, "Today");
+        builder.CloseComponent();
+
         builder.CloseElement();
-        //end of calendar body *@
-
-
-
-
-
 
         builder.CloseElement();
+        //end of calendar body
 
+        builder.CloseElement();
 
     };
 
-    private void RenderComponent() => CalendarFragment = CreateComponent();
-
-
 }
-
-
-
-
 
 <style>
     .calendar {
@@ -313,5 +338,11 @@
         cursor: pointer;
         background-color: lightblue;
         border-radius: .25em;
+    }
+
+    .calendar-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 </style>
