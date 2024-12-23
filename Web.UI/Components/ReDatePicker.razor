@@ -1,492 +1,935 @@
 @inherits Microsoft.AspNetCore.Components.Forms.InputDate<DateOnly?>
-@using web.ui.Shared
+@using web.ui.Resources
 @using Microsoft.JSInterop
+@using System.Text.RegularExpressions
+@using System.Reflection
+@using System.Globalization
+@using Web.UI.Classes
+@inject IJSRuntime JSRuntime
 
 
+<div readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" class="@((FloatingLabel ? "fe-floating " : "") + "fe-datepicker-wrapper " + (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : "")) @(String.IsNullOrEmpty(FloatingClass) ? "" : " " + FloatingClass)" id="@_datepickerId">
 
-<style>
+    <div class="fe-datepicker-container" currentvalue="@(String.IsNullOrEmpty(CurrentValueAsString) ? false : true)" >
 
-    .re-datepicker-wrapper{
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-        flex:1;
-        position: relative;
-        min-height: fit-content;
-    }
+        <div class="fe-datepicker-container-inputs" >
 
-    .re-datepicker-container{
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-        flex:1;
-    }
-
-    .re-datepicker-calendar{
-        display: none;      
-        position: absolute;
-        top: 100%;
-        left: 0;
-        z-index: 1000;
-        background-color: white;
-    }
-
-    .re-datepicker-input{
-        width: 2em;
-        padding: .25em;
-        margin: 0 .25em;
-        border: none;
-        border-radius: .25em;
-        text-align: center;
-    }
-
-    .re-datepicker-input:last-of-type{
-        width: 4em;
-    }
-
-    .re-datepicker-input:focus{
-        outline: none;
-        box-shadow: 0 0 0 2px #007bff;
-    }
-
-    @* .re-datepicker-wrapper:focus-within > .re-datepicker-calendar{
-         display: block;
-    } *@
-    @* .re-datepicker-wrapper:focus-within:has(> .re-datepicker-calendar-btn:focus) > .re-datepicker-calendar {
-        display: block;
-    } *@
-
-    @* .re-datepicker-wrapper:focus-within:has(.re-datepicker-calendar-btn:focus-within) > .re-datepicker-calendar {
-        display: block;
-    } *@
-
-    @* .re-datepicker-input:focus-within{display: none;} *@
-
-    .calendar-show { display: block !important; }
-
-    .re-datepicker-calendar-toggle{
-        display: none !important;
-    }
-
-    @* .re-datepicker-wrapper:focus-within > .re-datepicker-calendar > input.re-datepicker-input:focus-within{
-        display: non;
-    }  *@
-
-</style>
-
-<div class="re-datepicker-wrapper" id="_datepickerId" @onfocus="() => OnFocusIn()" >  
-
-    <div class="re-datepicker-container" >
-
-        <input 
-            onkeydown="@((KeyboardEventArgs e) => OnMonthKeyDown(e))"            
+            <input id="@_monthId" @key="_dateInput.Month.Id"
+            onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Month, null, _dayId))"
+            onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
             placeholder="MM" 
             type="text" 
             maxlength="2" 
             pattern="[0-9]*" 
-            class="re-datepicker-input" 
-            @bind="_month"   
-            oninput="this.value = this.value.replace(/[^0-9]$/g, '');" 
-        />
+            class="fe-datepicker-input" 
+            value="@_dateInput.Month.Value"
+            @onchange="@(e => OnInputChange(_dateInput.Month, e?.Value?.ToString()))"
+            onkeypress="return event.keyCode!=13"
+            oninput="ValidateInput(event)"
+            onfocus="@(() => InputFocusIn(_monthId))"
+            readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" />
 
-        <span>/</span>
+            <span tabindex="-1">/</span>
 
-        <input 
-            onkeydown="@((KeyboardEventArgs e) => OnDayKeyDown(e))"            
+            <input id="@_dayId" @key="_dateInput.Day.Id"
+            onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Day, _monthId, _yearId))"
+            onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
             placeholder="DD" 
             type="text" 
             maxlength="2" 
             pattern="[0-9]*" 
-            class="re-datepicker-input" 
-            @bind="_day"    
-            oninput="this.value = this.value.replace(/[^0-9]$/g, '');" 
-        />
+            class="fe-datepicker-input" 
+            value="@_dateInput.Day.Value"
+            @onchange="@(e => OnInputChange(_dateInput.Day, e?.Value?.ToString()))"
+            onkeypress="return event.keyCode!=13"
+            oninput="ValidateInput(event)"
+            onfocus="@(() => InputFocusIn(_dayId))"
+            readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" />
 
-        <span>/</span>
+            <span tabindex="-1">/</span>
 
-        <input 
-            onkeydown="@((KeyboardEventArgs e) => OnYearKeyDown(e))"            
+            <input id="@_yearId" @key="_dateInput.Year.Id"
+            onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Year, _dayId, null))"
+            onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
             placeholder="YYYY" 
             type="text" 
             maxlength="4" 
             pattern="[0-9]*" 
-            class="re-datepicker-input" 
-            min="@((DateTime.Now.Year) - 125)" 
-            max="@((DateTime.Now.Year) + 125)"
-            @bind="_year"        
-            oninput="this.value = this.value.replace(/[^0-9]$/g, '');" 
-        />
+            class="fe-datepicker-input"
+            min="@_dateInput.Year.Min"
+            max="@_dateInput.Year.Max"
+            value="@_dateInput.Year.Value"
+            @onchange="@(e => OnInputChange(_dateInput.Year, e?.Value?.ToString()))"
+            onkeypress="return event.keyCode!=13"
+            oninput="ValidateInput(event)"
+            onfocus="@(() => InputFocusIn(_yearId))"
+            readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" /> 
 
-        <button class="re-datepicker-calendar-btn" type="button" onclick="@(() => CalendarBtnOnClick())" >📅</button>
+        </div>
+
+        <div class="fe-datepicker-container-readonly">
+            <input style="border:none !important;" type="text" class="fe-datepicker-input-readonly" placeholder="@Label" readonly="true" value="@(CurrentValue.HasValue ? CurrentValue.Value.ToString("MM/dd/yyyy") : string.Empty)" />
+        </div>
+
+        @if (_showCalendarButton)
+        {
+
+            <button class="fe-datepicker-calendar-btn"
+            type="button"
+            onkeydown="@((KeyboardEventArgs e) => OnCalendarButtonKeyDown(e))"
+            onclick="@(() => CalendarBtnOnClick())">
+                <i class="fa-regular fa-calendar"></i>
+            </button> 
+
+        }
 
     </div>
-    
 
-    <Calendar 
-        Day="@(string.IsNullOrEmpty(_day) ? (int?)null : int.Parse(_day))" 
-        Month="@(string.IsNullOrEmpty(_month) ? (int?)null : int.Parse(_month))" 
-        Year="@(string.IsNullOrEmpty(_year) ? (int?)null : int.Parse(_year))"
-        OnDateSelected="OnDateSelected"
-        class="@("re-datepicker-calendar " + _showCalendar)"
-        id="@_id"
-        tabindex="0">
-    </Calendar>
+    <CalendarPopup 
+    Day="@(string.IsNullOrEmpty(_dateInput.Day.Value) ? (int?)null : int.Parse(_dateInput.Day.Value))"
+    Month="@(string.IsNullOrEmpty(_dateInput.Month.Value) ? (int?)null : int.Parse(_dateInput.Month.Value))"
+    Year="@(string.IsNullOrEmpty(_dateInput.Year.Value) ? (int?)null : int.Parse(_dateInput.Year.Value))"
+    Max="@Max"
+    Min="@Min"
+    OnDateSelected="CalendarPopupDateSelected"
+    OnToday="OnCalendarTodaySelected"
+    class="fe-datepicker-calendar top"
+    id="@_id"
+    tabindex="0">
+    </CalendarPopup>
+
+
+
+    <div class="fe-label ">@Label</div>
+
+
 
 </div>
-    
-
-
-
-
-@inject IJSRuntime JSRuntime
 
 @code {
 
+
+    [Parameter]
+    public bool FloatingLabel { get; set; }
+
+    [Parameter]
+    public string FloatingClass { get; set; }
+
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public int ReadonlyStyle { get; set; } = 0;
+
+    [Parameter]
+    public DateTime? Max { get; set; }
+
+    [Parameter]
+    public DateTime? Min { get; set; }
+
     private string _id = Guid.NewGuid().ToString();
     private string _datepickerId = Guid.NewGuid().ToString();
+    private string _monthId = Guid.NewGuid().ToString();
+    private string _dayId = Guid.NewGuid().ToString();
+    private string _yearId = Guid.NewGuid().ToString();
+    private bool _isKeyDown = false;
+    private bool _showCalendarButton = true;
 
-    private string _month { get; set; } = string.Empty;
-    private string _day { get; set; } = string.Empty;
-    private string _year { get; set; } = string.Empty;
+    private class Date{
+        public string Value { get; set; } = string.Empty;
+        public string Min { get; set; } = string.Empty;
+        public string Max { get; set; } = string.Empty;
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+    }
 
-    private string _showCalendar = string.Empty;
-    
+    private class DateInput
+    {
+        public Date Year { get; set; } = new Date();
+        public Date Month { get; set; } = new Date();
+        public Date Day { get; set; } = new Date();
+    }
 
-    private void OnFocusIn()
+    private DateInput _dateInput = new DateInput() { Day = new Date(), Month = new Date(), Year = new Date() };
+
+    private void CalendarBtnOnClick() => JSRuntime.InvokeVoidAsync("CalendarButtonOnClick", _id, _datepickerId);
+
+    protected override async Task OnInitializedAsync()
     {        
-        
-        _showCalendar = string.Empty;
-        
+        OnInitilizedDatePicker();
+        await base.OnInitializedAsync();
+        await Task.Delay(1000);
+        await JSRuntime.InvokeVoidAsync("SetWrapperEventListener", _datepickerId);
+
     }
 
-    private void OnDateSelected(DateOnly date)
+    private void OnInitilizedDatePicker()
     {
 
-        
-
-        if(date != default(DateOnly))
+        //hide calendar button if readonly is true
+        if (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly"))
         {
-
-            _month = date.Month.ToString();
-            _day = date.Day.ToString();
-            _year = date.Year.ToString();
-            CurrentValue = new DateOnly(int.Parse(_year), int.Parse(_month), int.Parse(_day));
-            CurrentValueAsString = CurrentValue.ToString();
-
-        }else{
-
-            _month = string.Empty;
-            _day = string.Empty;
-            _year = string.Empty;
-            CurrentValue = null;
-            CurrentValueAsString = string.Empty;
-
+            _showCalendarButton = AdditionalAttributes["readonly"].ToString().ToLower() == "true" ? false : true;
         }
 
-        
-        _showCalendar = string.Empty;
-        //JSRuntime.InvokeVoidAsync("ButtonOnClick", _id, _showCalendar ? "block" : "none");
-
-
-    }
-
-    private void OnMonthKeyDown(KeyboardEventArgs e)
-    {Console.WriteLine(e.Key);
-
-        if(String.IsNullOrEmpty(_month))
+        if (CurrentValue.HasValue)
         {
 
-            if(e.Key == "ArrowDown" || e.Key == "ArrowLeft")
+            _dateInput.Year = new Date
             {
-                _month = "12";
+                Value = CurrentValue.Value.Year.ToString(),
+                Min = Min.HasValue ? Min.Value.Year.ToString() : DateTime.MinValue.Year.ToString(),
+                Max = Max.HasValue ? Max.Value.Year.ToString() : DateTime.MaxValue.Year.ToString(),
+                Id = Guid.NewGuid().ToString()
+            };
 
-            }else if(e.Key == "ArrowUp" || e.Key == "ArrowRight")
+            _dateInput.Month = new Date
             {
-                _month = "1";
+                Value = TwoDigitFormat(CurrentValue.Value.Month),
+                Min = "01",
+                Max = "12",
+                Id = Guid.NewGuid().ToString()
+            };
+
+            _dateInput.Day = new Date(){
+                Value = TwoDigitFormat(CurrentValue.Value.Day),
+                Min = "01",
+                Max = DateTime.DaysInMonth(CurrentValue.Value.Year, CurrentValue.Value.Month).ToString(),
+                Id = Guid.NewGuid().ToString()
+            };
+
+            if (Min.HasValue && Min.Value.Year == CurrentValue.Value.Year && Min.Value.Month == CurrentValue.Value.Month)
+            {
+                _dateInput.Day.Min = Min.Value.Day.ToString();
+            }
+
+            if (Max.HasValue && Max.Value.Year == CurrentValue.Value.Year && Max.Value.Month == CurrentValue.Value.Month)
+            {
+                _dateInput.Day.Max = Max.Value.Day.ToString();
             }
 
         }else{
-        
-            if(e.Key == "ArrowDown" || e.Key == "ArrowLeft")
+
+            _dateInput.Year = new Date
             {
-                int month = int.Parse(_month);
-                month--;
-                if(month < 1)
-                {
-                    month = 12;
-                }
-                _month = month.ToString();
-            }
-            else if(e.Key == "ArrowUp" || e.Key == "ArrowRight")
+                Value = string.Empty,
+                Min = Min.HasValue ? Min.Value.Year.ToString() : DateTime.MinValue.Year.ToString(),
+                Max = Max.HasValue ? Max.Value.Year.ToString() : DateTime.MaxValue.Year.ToString(),
+                Id = Guid.NewGuid().ToString()
+            };
+
+
+            _dateInput.Month = new Date
             {
-                int month = int.Parse(_month);
-                month++;
-                if(month > 12)
-                {
-                    month = 1;
-                }
-                _month = month.ToString();
-            }
+                Value = string.Empty,
+                Min = "01",
+                Max = "12",
+                Id = Guid.NewGuid().ToString()
+            };
+
+            _dateInput.Day = new Date
+            {
+                Value = string.Empty,
+                Min = "01",
+                Max = "31",
+                Id = Guid.NewGuid().ToString()
+            };
 
         }
-
-        SetCurrentValue();
-
-    }
-
-    private void OnDayKeyDown(KeyboardEventArgs e)
-    {
-
-        if(String.IsNullOrEmpty(_day))
-        {
-
-            if(e.Key == "ArrowDown" || e.Key == "ArrowLeft")
-            {
-                _day = "31";
-
-            }else if(e.Key == "ArrowUp" || e.Key == "ArrowRight")
-            {
-                _day = "1";
-            }
-
-        }else{
-        
-            if(e.Key == "ArrowDown" || e.Key == "ArrowLeft")
-            {
-                int day = int.Parse(_day);
-                day--;
-                if(day < 1)
-                {
-                    
-                    if(String.IsNullOrEmpty(_month) || String.IsNullOrEmpty(_year))
-                    {
-                        day = 31;
-                        
-                    }else{
-                        day = DateTime.DaysInMonth(int.Parse(_year), int.Parse(_month));
-                    }
-
-
-                                        
-                }
-                _day = day.ToString();
-            }
-            else if(e.Key == "ArrowUp" || e.Key == "ArrowRight")
-            {
-                int day = int.Parse(_day);
-                day++;
-                
-                if(String.IsNullOrEmpty(_month) || String.IsNullOrEmpty(_year))
-                {
-                    if(day > 31)
-                    {
-                        day = 1;
-                    }
-                    _day = day.ToString();
-                    
-                }else{
-                    if(day > DateTime.DaysInMonth(int.Parse(_year), int.Parse(_month)))
-                    {
-                        day = 1;
-                    }
-                    _day = day.ToString();
-                }
-
-
-                
-            }
-
-        }
-
-        SetCurrentValue();
-
-    }
-
-    private void OnYearKeyDown(KeyboardEventArgs e)
-    {
-
-        if(String.IsNullOrEmpty(_year))
-        {
-
-            if(e.Key == "ArrowDown" || e.Key == "ArrowLeft")
-            {
-                _year = (DateTime.Now.Year + 125).ToString();
-
-            }else if(e.Key == "ArrowUp" || e.Key == "ArrowRight")
-            {
-                _year = (DateTime.Now.Year - 125).ToString();
-            }
-
-        }else{
-
-            if(e.Key == "ArrowDown" || e.Key == "ArrowLeft")
-            {
-                int year = int.Parse(_year);
-                year--;
-                if(year < DateTime.Now.Year - 125)
-                {
-                    year = DateTime.Now.Year + 125;
-                }
-                _year = year.ToString();
-            }
-            else if(e.Key == "ArrowUp" || e.Key == "ArrowRight")
-            {
-                int year = int.Parse(_year);
-                year++;
-                if(year > DateTime.Now.Year + 125)
-                {
-                    year = DateTime.Now.Year - 125;
-                }
-                _year = year.ToString();
-            }
-            
-        }        
-
-        SetCurrentValue();
 
     }
 
     private void SetCurrentValue()
     {
-        if(!string.IsNullOrEmpty(_month) && !string.IsNullOrEmpty(_day) && !string.IsNullOrEmpty(_year))
+        if (!string.IsNullOrEmpty(_dateInput.Year.Value) && !string.IsNullOrEmpty(_dateInput.Month.Value) && !string.IsNullOrEmpty(_dateInput.Day.Value))
         {
-            CurrentValue = new DateOnly(int.Parse(_year), int.Parse(_month), int.Parse(_day));
-            CurrentValueAsString = CurrentValue.ToString();
-        }else{
+            CurrentValue = new DateOnly(int.Parse(_dateInput.Year.Value), int.Parse(_dateInput.Month.Value), int.Parse(_dateInput.Day.Value));
+            CurrentValueAsString = CurrentValue?.ToString("yyyy-MM-dd") ?? string.Empty;
+        }
+        else
+        {
             CurrentValue = null;
             CurrentValueAsString = string.Empty;
         }
     }
-    
 
-    protected override async Task OnInitializedAsync()
+    private void OnInputChange(Date date, string? value)
     {
 
-        if (Value.HasValue && typeof(DateOnly) == Value.GetType())
+        if (string.IsNullOrEmpty(value) || !int.TryParse(value, out int parsedValue))
         {
-            _month = Value.Value.Month.ToString();
-            _day = Value.Value.Day.ToString();
-            _year = Value.Value.Year.ToString();
-        }else{
-            _month = string.Empty;
-            _day = string.Empty;
-            _year = string.Empty;
+            date.Value = string.Empty;
+        }
+        else
+        {   
+            if (GetPropertyName(_dateInput, date) == "Year")
+            {
+                date.Value = FourDigitFormat(VerifyMinMax(date, parsedValue)) ?? string.Empty;
+
+            }else{
+
+                date.Value = TwoDigitFormat(VerifyMinMax(date, parsedValue)) ?? string.Empty;
+
+            }            
         }
 
+        if (GetPropertyName(_dateInput, date) == "Month" || GetPropertyName(_dateInput, date) == "Year")
+        {
+            SetDayMinMaxDays();            
+        }
 
-        
-
-        await base.OnInitializedAsync();
-        
+        date.Id = Guid.NewGuid().ToString();  
+        SetCurrentValue();
     }
 
-    private void CalendarOnClick()
+    private void SetDayMinMaxDays()
     {
-        
-        _showCalendar = _showCalendar == "re-datepicker-calendar-toggle" ? string.Empty : "re-datepicker-calendar-toggle";
+        if (string.IsNullOrEmpty(_dateInput.Year.Value) || string.IsNullOrEmpty(_dateInput.Month.Value))
+        {
+            //_dateInput.Day.Max = "28";
+            //_dateInput.Day.Value = string.Empty;
+            //_dateInput.Day.Id = Guid.NewGuid().ToString();
+        }
+        else
+        {
+            int year = int.Parse(_dateInput.Year.Value);
+            int month = int.Parse(_dateInput.Month.Value);
+            int maxDaysInMonth = DateTime.DaysInMonth(year, month);
 
-        
-        
-        //await JSRuntime.InvokeVoidAsync("ButtonOnClick", _id, _showCalendar ? "block" : "none");
-
-        //await JSRuntime.InvokeVoidAsync("SetEventListeners", _id);
-        
-        
-    }
-
-    private void CalendarBtnOnClick()
-    {
-        
-        //_showCalendar = _showCalendar == "re-datepicker-calendar-toggle" ? string.Empty : "re-datepicker-calendar-toggle";
-
-        //await JSRuntime.InvokeVoidAsync("ButtonOnClick", _id, _showCalendar ? "block" : "none");
-
-        //await JSRuntime.InvokeVoidAsync("SetEventListeners", _id);
-
-        JSRuntime.InvokeVoidAsync("CalendarButtonOnClick", _id, _datepickerId);
-        
-    }
-
-    
-}
-
-<script>
-
-    let focusinClass = false;
-    let focusoutClass = false;
-    
-    document.addEventListener('focusin', (event) => {
-        
-        //console.log("docFocusIn",focusinClass, focusoutClass,event.target.parentElement);
-
-        focusinClass = !focusinClass;
-
-        
-    });
-
-    document.addEventListener('focusout', (event) => {
-
-
-        const parent = event.target.parentElement;
-
-        focusoutClass = !focusoutClass;
-
-        //console.log("docFocusOut",focusinClass,focusoutClass, parent);
-
-        setTimeout(function(){
-
-            console.log("docFocusOut",focusinClass,focusoutClass, event.target);
-
-
-            if(focusinClass !== focusoutClass)
+            if (Min.HasValue && year == Min.Value.Year && month == Min.Value.Month)
             {
-                
-                const parent = event.target.closest('.re-datepicker-wrapper');
-                console.log("hide calendar: ", parent);
+                _dateInput.Day.Min = Min.Value.Day.ToString();
+            }
+            else
+            {
+                _dateInput.Day.Min = "01";
+            }
 
-                if(parent.classList.contains("re-datepicker-wrapper"))
+            if (Max.HasValue && year == Max.Value.Year && month == Max.Value.Month)
+            {
+                _dateInput.Day.Max = Max.Value.Day.ToString();
+            }
+            else
+            {
+                _dateInput.Day.Max = maxDaysInMonth.ToString();
+            }
+
+            if (int.TryParse(_dateInput.Day.Value, out int dayValue) && dayValue > int.Parse(_dateInput.Day.Max))
+            {
+                _dateInput.Day.Value = _dateInput.Day.Max;
+                _dateInput.Day.Id = Guid.NewGuid().ToString();
+            }
+        }
+    }
+
+    private int VerifyMinMax(Date date, int value)
+    {
+        if (date == _dateInput.Day && Min.HasValue && Max.HasValue)
+        {
+
+            if (string.IsNullOrEmpty(_dateInput.Year.Value))
+            {
+                //return value;
+            }
+            else
+            {
+                int year = int.Parse(_dateInput.Year.Value ?? string.Empty);
+                int month = int.Parse(_dateInput.Month.Value ?? string.Empty);
+
+                if (year == Min.Value.Year && month == Min.Value.Month && value < Min.Value.Day)
                 {
-                    const calendar = parent.querySelector('.re-datepicker-calendar');
-                    calendar.classList.remove("calendar-show");
+                    return Min.Value.Day;
+                }
+
+                if (year == Max.Value.Year && month == Max.Value.Month && value > Max.Value.Day)
+                {
+                    return Max.Value.Day;
                 }
 
             }
-        }, 200)
-
-    });
-
-    CalendarButtonOnClick = (calId, wrpId) => {
-        //console.log("CalendarButtonOnClick: " + calId + " " + wrpId);
-
-
-        const wrapper = document.getElementById(wrpId);
-        const calendar = document.getElementById(calId);
-
-        if(calendar.classList.contains("calendar-show"))
-        {
-            calendar.classList.remove("calendar-show");
-
-            
-            
-
-        }else{
-
-            calendar.classList.add("calendar-show");
-            calendar.focus();
-
-            
 
         }
+        else if (date == _dateInput.Month && Min.HasValue && Max.HasValue)
+        {
+
+            if (string.IsNullOrEmpty(_dateInput.Year.Value))
+            {
+                //return value;
+
+            }else{
+
+                int year = int.Parse(_dateInput.Year.Value);
+
+                if (year == Min.Value.Year && value < Min.Value.Month)
+                {
+                    return Min.Value.Month;
+                }
+
+                if (year == Max.Value.Year && value > Max.Value.Month)
+                {
+                    return Max.Value.Month;
+                }
+
+            }
+
+        }
+        else if (date == _dateInput.Year)
+        {
+            if (Min.HasValue && value < Min.Value.Year)
+            {
+                return Min.Value.Year;
+            }
+
+            if (Max.HasValue && value > Max.Value.Year)
+            {
+                return Max.Value.Year;
+            }
+        }
+
+        if (value < int.Parse(date.Min) || value > int.Parse(date.Max))
+        {
+            return int.Parse(date.Min);
+        }
+
+        return value;
+    }
+
+    private void CalendarPopupDateSelected(CalendarDate cd)
+    {
+
+        if (cd.HasValue)
+        {
+            OnInputChange(_dateInput.Year, cd.Year.ToString());
+            OnInputChange(_dateInput.Month, cd.Month.ToString());
+            OnInputChange(_dateInput.Day, cd.Day.ToString());
+        }else{
+            OnInputChange(_dateInput.Year, string.Empty);
+            OnInputChange(_dateInput.Month, string.Empty);
+            OnInputChange(_dateInput.Day, string.Empty);
+        }       
+        
+        if(cd.Type.ToLower() != "today"){
+            CloseCalendar();
+        }else{
+            JSRuntime.InvokeVoidAsync("FocusOnElement", _id);
+        }
+
+    }
+
+    private string TwoDigitFormat(int value) => value < 10 ? "0" + value.ToString() : value.ToString();
+    private string FourDigitFormat(int value) {
+        
+        if (value >= 1000)
+        {
+            return value.ToString();
+        }
+        else if (value < 1000 && value >= 100)
+        {
+            return "0" + value.ToString();
+        }
+        else if (value < 100 && value >= 10)
+        {
+            return "00" + value.ToString();
+        }
+        return "000" + value.ToString();
+
+    }
+
+    private void OnCalendarButtonKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Tab")
+        {
+            CloseCalendar();
+        }
+    }
+
+    private string GetPropertyName(object obj, object value)
+    {
+        var property = obj.GetType()
+                          .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                          .FirstOrDefault(p => p.GetValue(obj)?.Equals(value) == true);
+
+        return property?.Name ?? "Property not found";
+    }
+
+    private void ArrowUp(Date date)
+    {
+        string propertyName = GetPropertyName(_dateInput, date);
+
+        if (string.IsNullOrEmpty(date.Value))
+        {
+
+            if (propertyName == "Year")
+            {
+                date.Value = FourDigitFormat(int.Parse(date.Min));
+            }
+            else
+            {
+                date.Value = TwoDigitFormat(int.Parse(date.Min));
+            }     
+            
+        }
+        else
+        {
+            int value = int.Parse(date.Value);
+            value++;
+
+            if (propertyName == "Year")
+            {
+                if (Max.HasValue && value > Max.Value.Year)
+                {
+                    date.Value = FourDigitFormat(Max.Value.Year);
+                }
+                else if (value <= int.Parse(date.Max))
+                {
+                    date.Value = FourDigitFormat(value);
+                }
+                else
+                {
+                    date.Value = FourDigitFormat(int.Parse(date.Min));
+                }
+            }
+            else if (propertyName == "Month")
+            {
+                
+                if (Max.HasValue && !string.IsNullOrEmpty(_dateInput.Year.Value) && int.Parse(_dateInput.Year.Value) == Max.Value.Year && value > Max.Value.Month)
+                {
+                    date.Value = TwoDigitFormat(Max.Value.Month);
+                }
+                else if (value <= int.Parse(date.Max))
+                {
+                    date.Value = TwoDigitFormat(value);
+                }
+                else
+                {
+                    date.Value = TwoDigitFormat(int.Parse(date.Min));
+                }
+            }
+            else if (propertyName == "Day")
+            {
+                if (Max.HasValue && !string.IsNullOrEmpty(_dateInput.Year.Value) && int.Parse(_dateInput.Year.Value ?? string.Empty) == Max.Value.Year && int.Parse(_dateInput.Month.Value ?? string.Empty) == Max.Value.Month && value > Max.Value.Day)
+                {
+                    date.Value = TwoDigitFormat(Max.Value.Day);
+                }
+                else if (value <= int.Parse(date.Max))
+                {
+                    date.Value = TwoDigitFormat(value);
+                }
+                else
+                {
+                    date.Value = TwoDigitFormat(int.Parse(date.Min));
+                }
+            }
+        }
+
+        if (propertyName == "Month" || propertyName == "Year")
+        {
+            SetDayMinMaxDays();
+        }
+
+        SetCurrentValue();
+    }
+
+    private void ArrowDown(Date date)
+    {
+        string propertyName = GetPropertyName(_dateInput, date);
+
+        if (string.IsNullOrEmpty(date.Value))
+        {
+            if (propertyName == "Year")
+            {
+                date.Value = FourDigitFormat(int.Parse(date.Max));
+            }
+            else
+            {
+                date.Value = TwoDigitFormat(int.Parse(date.Max));
+            }
+        }
+        else
+        {
+            int value = int.Parse(date.Value);
+            value--;
+
+            if (propertyName == "Year")
+            {
+                if (Min.HasValue && value < Min.Value.Year)
+                {
+                    date.Value = FourDigitFormat(Min.Value.Year);
+                }
+                else if (value >= int.Parse(date.Min))
+                {
+                    date.Value = FourDigitFormat(value);
+                }
+                else
+                {
+                    date.Value = FourDigitFormat(int.Parse(date.Max));
+                }
+            }
+            else if (propertyName == "Month")
+            {
+                if (Min.HasValue && !string.IsNullOrEmpty(_dateInput.Year.Value) && int.Parse(_dateInput.Year.Value) == Min.Value.Year && value < Min.Value.Month)
+                {
+                    date.Value = TwoDigitFormat(Min.Value.Month);
+                }
+                else if (value >= int.Parse(date.Min))
+                {
+                    date.Value = TwoDigitFormat(value);
+                }
+                else
+                {
+                    date.Value = TwoDigitFormat(int.Parse(date.Max));
+                }
+            }
+            else if (propertyName == "Day")
+            {
+                if (Min.HasValue && !string.IsNullOrEmpty(_dateInput.Year.Value) && int.Parse(_dateInput.Year.Value) == Min.Value.Year && int.Parse(_dateInput.Month.Value) == Min.Value.Month && value < Min.Value.Day)
+                {
+                    date.Value = TwoDigitFormat(Min.Value.Day);
+                }
+                else if (value >= int.Parse(date.Min))
+                {
+                    date.Value = TwoDigitFormat(value);
+                }
+                else
+                {
+                    date.Value = TwoDigitFormat(int.Parse(date.Max));
+                }
+            }
+        }
+
+        if (propertyName == "Month" || propertyName == "Year")
+        {
+            SetDayMinMaxDays();
+        }
+
+        SetCurrentValue();
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e, Date date, string? previous, string? next)
+    {
+        if (_isKeyDown)
+        {
+            return;
+        }
+        _isKeyDown = true;
+
+        if (e.Key == "ArrowUp")
+        {
+            ArrowUp(date);
+        }
+        else if (e.Key == "ArrowDown")
+        {
+            ArrowDown(date);
+        }
+        else if (e.Key == "ArrowRight")
+        {            
+            InputFocusIn(next, false);
+        }
+        else if (e.Key == "ArrowLeft")
+        {            
+            InputFocusIn(previous, false);
+        }
+    }
+
+    private void OnKeyUp(KeyboardEventArgs e) => _isKeyDown = false;
+    private void CloseCalendar() => JSRuntime.InvokeVoidAsync("CloseCalendar", _id);
+    private void HighlightText(string id) => JSRuntime.InvokeVoidAsync("HighlightText", id);
+
+    private void InputFocusIn(string id, bool close = true)
+    {
+        if (close)
+        {
+            CloseCalendar();
+        }
+        HighlightText(id);
+    }    
+
+}
+
+<script>    
+
+    SetWrapperEventListener = (id) => {        
+
+        const wrapperElement = document.getElementById(id);
+
+        if(wrapperElement == null){
+            return;
+        }
+
+        wrapperElement.addEventListener('focusout', (event) => {
+
+            const calendarElement = (event.target.classList.contains("fe-datepicker-calendar-btn") || event.target.classList.contains("calendar-header-action"));
+            const calendarHeader = (event.relatedTarget != null && (event.relatedTarget.classList.contains("calendar-header-action") ||
+                event.relatedTarget.classList.contains("calendar-day") ||
+                event.relatedTarget.classList.contains("calendar-day-btn") ||
+                event.relatedTarget.classList.contains("calendar-footer-btn")));
+            const calendarAfterToday = (event.target.classList.contains("fe-datepicker-calendar") && event.target.classList.contains("calendar-show") && event.relatedTarget == null);
+            const isCalendar = (event.relatedTarget != null && event.relatedTarget.classList.contains("fe-datepicker-calendar"));            
+
+           if((calendarElement && !calendarHeader) || calendarAfterToday || (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar)){
+               
+                const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
+                calendarElement.classList.remove("calendar-show");               
+
+            }
+
+        });
+
+        wrapperElement.addEventListener('keydown', (event) => {
+              if (event.key === 'ArrowLeft') {
+                  event.preventDefault(); // Prevent default left arrow behavior
+                  let prevElement = document.activeElement.previousElementSibling;
+
+                  // Find the previous focusable element
+                  while (prevElement && !prevElement.tabIndex) {
+                    prevElement = prevElement.previousElementSibling;
+                  }
+
+                  if (prevElement) {
+                    prevElement.focus();
+                  }
+
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault(); // Prevent default right arrow behavior
+                let nextElement = document.activeElement.nextElementSibling;
+
+                // Find the next focusable element
+                while (nextElement && !nextElement.tabIndex) {
+                nextElement = nextElement.nextElementSibling;
+                }
+
+                if (nextElement) {
+                nextElement.focus();
+                }
+            }
+        });
+
+    };
+
+    CalendarButtonOnClick = (calId, wrpId) => {
+        
+        const wrapper = document.getElementById(wrpId);
+        const calendar = document.getElementById(calId);
+        const docHeight = window.innerHeight;
+
+        setTimeout(function(){            
+
+            ToggleCalendar(calId);
+            const calendarRects = calendar.getClientRects();
+            const wrpBottom = wrapper.getClientRects();
+
+            if(calendarRects.length === 1){
+
+                if((wrpBottom[0].bottom + calendarRects[0].height) < (docHeight - 25))
+                {
+                    calendar.classList.replace("bottom", "top");
+
+                }else{
+                    
+                    calendar.classList.replace("top", "bottom");
+                }
+
+            }else{
+                
+                calendar.classList.remove("bottom");
+                calendar.classList.add("top");
+
+            } 
+
+        }, 0);
+
+    };
+
+    CloseCalendar = (id) => {
+        const calendar = document.getElementById(id);
+        if(calendar && calendar.classList.contains("calendar-show")){
+            calendar.classList.remove("calendar-show");
+        }
+    };
+
+    ToggleCalendar = (id) => {
+        const calendar = document.getElementById(id);
+        calendar.classList.toggle("calendar-show");
+    };
+
+    HighlightText = (id) => {
+        const element = document.getElementById(id);
+        if (element) {            
+            element.select();
+        }
+    };
+
+    FocusOnElement = (id) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.focus();
+        }
+    };
+
+    ValidateInput = (event) => {
+        
+        const input = event.target;
+        const value = input.value;
+        const regex = /^[0-9]*$/; // Only allow numeric values
+
+        // Remove non-numeric characters
+        if (!regex.test(value)) {
+            input.value = value.replace(/[^0-9]/g, '');
+        }
+        
+    };
 
 
+</script>
+
+<style>
+
+    .fe-floating.fe-datepicker-wrapper{
+        min-height:3.6em !important;
+    }
+
+    .fe-datepicker-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        // flex: 1;
+        position: relative;
+        // max-height: 3.6em !important;
+    }
+
+    .fe-datepicker-calendar {
+        display: none;
+        position: absolute;
+        left: 0;
+        z-index: 2;
+        background-color: white;
+    }
+
+    .top {
+        top: 100%;
+    }
+
+    .bottom {
+        bottom: 100%;
     }
 
     
 
-    
+    .fe-datepicker-container {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
 
+    .fe-datepicker-container-inputs {
+        display:flex;
+        flex-direction: row;
+        align-content:flex-start;
+        -moz-box-align: start;
+        flex-wrap: nowrap;
+        min-width: 7em;
+    }
 
+    .fe-datepicker-input, .fe-datepicker-input-readonly {
+        width: fit-content;
+        field-sizing: content;
+        border: none !important;
+        border-radius: .25em;
+    }
 
-</script>
+    .fe-datepicker-input{
+        max-width: 2em;
+    }
+
+    .fe-datepicker-input:not([readonly]):last-child{
+        max-width:3em;
+    }
+
+    .fe-datepicker-input:focus {
+        outline: none;
+    }
+
+    .fe-datepicker-calendar-btn {
+        border: none;
+        background: none;
+    }
+
+    .calendar-show {
+        display: block !important;
+    }
+
+    .fe-datepicker-calendar-toggle {
+        display: none !important;
+    }
+
+    /* floating label section */
+    .fe-floating.fe-datepicker-wrapper:focus-within {
+        outline: none;
+        box-shadow: var(--fe-box-shadow);
+    }
+
+    .fe-floating.fe-datepicker-wrapper > .fe-label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        font-size: .75em;
+        color: gray;
+        background-color: var(--fe-bg);
+        /* opacity: 0;*/
+        z-index: 1;
+        transition: all .2s ease-in-out;
+        border-radius: var(--fe-border-radius);
+        -moz-border-radius: inherit;
+        -webkit-border-radius: inherit;
+    }
+
+    .fe-floating.fe-datepicker-wrapper:focus-within > .fe-label {
+        top: -.6rem;
+        font-size: .75em;
+        background-color: var(--fe-bg);
+        opacity: 1;
+        z-index: 1;
+        color: var(--fe-color);
+        border-radius: var(--fe-border-radius);
+        -moz-border-radius: inherit;
+        -webkit-border-radius: inherit;
+    }
+
+    .fe-datepicker-container-readonly{
+        display: none;        
+    }
+
+    .fe-datepicker-container-readonly > .fe-datepicker-input {
+        width: 100%;
+        border: none;
+        background-color: transparent;
+        text-align: center;
+        color: var(--fe-color-readonly);
+    }
+
+    .fe-floating.fe-datepicker-wrapper[readonly] > .fe-datepicker-container > .fe-datepicker-container-inputs{
+        display:none;
+    }
+
+    .fe-floating.fe-datepicker-wrapper[readonly] > .fe-datepicker-container > .fe-datepicker-container-readonly {
+        display: flex;
+    }    
+
+     .fe-floating.fe-datepicker-wrapper:has(.fe-datepicker-container[currentvalue]) > .fe-label {
+        top: -.6rem;
+        font-size: .75em;
+        background-color: var(--fe-bg);
+        opacity: 1;
+        z-index: 1;
+        color: var(--fe-color);
+        border-radius: var(--fe-border-radius);
+        -moz-border-radius: inherit;
+        -webkit-border-radius: inherit;
+    }
+
+    .fe-floating.fe-datepicker-wrapper[readonly]:has(.fe-datepicker-container:not([currentvalue])) > .fe-label {
+        display:none;
+    }
+
+</style>
