@@ -1,13 +1,34 @@
+
+
 @page "/text"
 
 <PageTitle>Text</PageTitle>
 
 <h5>Text</h5>
 
-<ReText class="re-input" @bind-Value="textOne" ToUpper="false" ToLower="false"></ReText>
+<ReText 
+    class="re-input" 
+    @oninput="@(e => textOne = e.Value.ToString())" 
+    @bind-Value="textOne" 
+    ToUpper="false" 
+    ToLower="false">
+</ReText>
+@textOne
+
+<ReText 
+    class="re-input" 
+    @bind-Value="textTwo" 
+    ToUpper="false" 
+    ToLower="false" onkeypress="if (event.key === 'Enter') { event.preventDefault(); }">
+    >
+</ReText>
+@textTwo
 
 @code {
     
     private string textOne = "Hello, World!";
 
+    private string textTwo = "Hello, World!";
+
+    
 }

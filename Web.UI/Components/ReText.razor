@@ -12,8 +12,8 @@
     
     [Parameter]
     public bool ToLower { get; set; }
-    private RenderFragment? TextContent { get; set; }
 
+    private RenderFragment? TextContent { get; set; }
     private RenderFragment CreateComponent() => builder =>
     {
         builder.OpenElement(0, "input");
@@ -28,8 +28,10 @@
         }
         builder.AddAttribute(4, "type", "text");
         builder.AddAttribute(5, "value", CurrentValueAsString);
+
         builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = FormatValueAsString(__value), CurrentValueAsString));
-        builder.AddAttribute(7, "oninput", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = FormatValueAsString(__value), CurrentValueAsString));
+
+        
         builder.SetUpdatesAttributeName("value");
         builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
         builder.CloseElement();

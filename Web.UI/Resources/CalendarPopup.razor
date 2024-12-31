@@ -1,8 +1,10 @@
 @using System.Globalization
 @using Web.UI.Classes
+@using Microsoft.JSInterop
 @inherits Microsoft.AspNetCore.Components.ComponentBase
+@inject IJSRuntime JSRuntime
 
-@CalendarFragment
+@* @CalendarFragment *@
 
 @code {
 
@@ -58,6 +60,8 @@
         InitializeMinMaxYears();
         SetCalendarOnInit(Year, Month, Day);
         RenderComponent();
+
+        
     }
 
     private void InitializeMinMaxYears()
@@ -456,6 +460,86 @@
         return false;
     }
 
+    private bool ToggleYearMonthView = false;
+
+    private void ToggleCalendarView()
+    {
+        ToggleYearMonthView = !ToggleYearMonthView;
+        if (ToggleYearMonthView)
+        {
+            for (int i = currentYear - 20; i <= currentYear + 20; i++)
+            {
+                years.Add(i);
+            }
+            Task.Run(async () => await JSRuntime.InvokeVoidAsync("initializeScrollEvent", DotNetObjectReference.Create(this), calendarBodyId));
+        }else{
+            years.Clear();
+
+        }
+    }
+
+    private ElementReference calendarBodyRef;
+    
+    private string calendarBodyId = Guid.NewGuid().ToString();
+    
+    private List<int> years = new List<int>();
+        
+
+    [JSInvokable]
+    public void LoadMoreYears()
+    {
+
+        Console.WriteLine("LoadMoreYears");
+
+
+        AddMoreNextYears();
+        
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void LoadPreviousYears()
+    {
+
+        Console.WriteLine("LoadPreviousYears");
+
+        AddMorePreviousYears();
+        
+        StateHasChanged();
+    }
+
+    private void AddMoreNextYears()
+    {
+        int newEndYear = years[years.Count - 1] + 10;
+        for (int i = years[years.Count - 1] + 1; i <= newEndYear; i++)
+        {
+            years.Add(i);
+        }
+
+        //if (years.Count > 20)
+        //{
+
+            years.RemoveRange(0, 10);
+            
+        //}
+    }
+
+    private void AddMorePreviousYears()
+    {
+        int newStartYear = years[0] - 10;
+        for (int i = years[0] - 1; i >= newStartYear; i--)
+        {
+            years.Insert(0, i);
+        }
+
+        //if (years.Count > 20)
+        //{
+            years.RemoveRange(years.Count - 10, 10);
+        //}
+    }
+
+
+
     private RenderFragment? CalendarFragment { get; set; }
 
     private void RenderComponent() => CalendarFragment = CreateComponent();
@@ -470,10 +554,32 @@
 
         //start of calendar header
         builder.OpenElement(4, "div");
-        builder.AddAttribute(5, "class", "calendar-header");        
+        builder.AddAttribute(5, "class", "calendar-header");      
+
+        //start of month/year
+        builder.OpenElement(6, "div");
+        builder.AddAttribute(7, "class", "calendar-header-action");
+        builder.AddContent(8, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(currentMonth));//current month
+        builder.AddContent(11, currentYear);//current year
+        builder.OpenElement(12, "button");
+        builder.AddAttribute(13, "type", "button");
+        builder.AddAttribute(14, "class", "calendar-header-action calendar-monthyear-btn");
+        builder.AddAttribute(15, "tabindex", "-1");
+        builder.AddAttribute(16, "onclick", EventCallback.Factory.Create(this, () => ToggleCalendarView()));
+        builder.OpenElement(10, "i");
+        builder.AddAttribute(11, "class", "fa-solid fa-caret-down");
+        builder.CloseElement();
+        builder.CloseElement();
+        builder.CloseElement();  
+
+
+        
+
+        
+        
 
         //start of month select
-        builder.OpenElement(11, "div");
+        @* builder.OpenElement(11, "div");
         builder.AddAttribute(12, "class", "calendar-header-action select-month");
 
         builder.OpenElement(12, "input");
@@ -496,7 +602,6 @@
         builder.OpenElement(10, "i");
         builder.AddAttribute(11, "class", "fa-solid fa-caret-up");
         builder.CloseElement();
-        // builder.AddContent(21, "⏶");
         builder.CloseElement();
 
         builder.OpenElement(17, "button");
@@ -507,14 +612,13 @@
         builder.OpenElement(10, "i");
         builder.AddAttribute(11, "class", "fa-solid fa-caret-down");
         builder.CloseElement();
-        // builder.AddContent(21, "⏷");
         builder.CloseElement();        
         builder.CloseElement();
-        builder.CloseElement();
+        builder.CloseElement(); *@
         //end of month select
 
         //start of year input
-        builder.OpenElement(11, "div");
+        @* builder.OpenElement(11, "div");
         builder.AddAttribute(12, "class", "calendar-header-action select-year");
 
         builder.OpenElement(19, "input");
@@ -535,9 +639,7 @@
         builder.AddAttribute(18, "type", "button");
         builder.AddAttribute(29, "tabindex", "-1");
         builder.AddAttribute(19, "class", "calendar-header-action calendar-day-btn");
-        //builder.AddAttribute(19, "disabled", DisableYearIncrementBtn());
         builder.AddAttribute(20, "onclick", EventCallback.Factory.Create(this, IncrementSelectYear));
-        // builder.AddContent(21, "⏶");
         builder.OpenElement(10, "i");
         builder.AddAttribute(11, "class", "fa-solid fa-caret-up");
         builder.CloseElement();
@@ -551,11 +653,10 @@
         builder.OpenElement(10, "i");
         builder.AddAttribute(11, "class", "fa-solid fa-caret-down");
         builder.CloseElement();
-        // builder.AddContent(21, "⏷");
         builder.CloseElement();
         builder.CloseElement();
 
-        builder.CloseElement();
+        builder.CloseElement(); *@
         //end of year input
 
         //start of next button
@@ -589,106 +690,179 @@
         //end of calendar header
         builder.CloseElement();
 
-        //start of calendar body
-        builder.OpenElement(32, "div");
-        builder.AddAttribute(33, "class", "calendar-body");
 
-        //start of calendar weekdays
-        builder.OpenElement(34, "div");
-        builder.AddAttribute(35, "class", "calendar-weekdays");
-
-        foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+        if (ToggleYearMonthView)
         {
-            builder.OpenElement(36, "div");
-            builder.AddAttribute(37, "title", DateTimeFormatInfo.CurrentInfo.GetDayName((DayOfWeek)day));
-            builder.AddAttribute(38, "class", "calendar-weekday");
-            builder.AddContent(39, DateTimeFormatInfo.CurrentInfo.GetAbbreviatedDayName((DayOfWeek)day).Substring(0, 1));
+            builder.OpenElement(31, "div");
+            builder.AddAttribute(32, "class", "calendar-body");
+            builder.AddAttribute(33, "id", calendarBodyId);
+            builder.AddElementReferenceCapture(33, element => calendarBodyRef = element);
+
+            
+            
+            
+            builder.OpenElement(33, "div");
+
+            builder.OpenElement(34, "div");
+            builder.AddAttribute(35, "class", "calendar-monthyear-view");
+            
+            
+
+            @foreach(var year in years)
+            {
+                builder.OpenElement(34, "div");
+                builder.AddAttribute(35, "class", "year");
+                builder.AddAttribute(36, "onclick", EventCallback.Factory.Create(this, () => YearOnChange(new ChangeEventArgs { Value = year })));
+                builder.AddContent(37, year);
+                builder.CloseElement();
+            }
+
+
+            
+            builder.OpenElement(40, "div");
+            builder.AddAttribute(41, "class", "months");
+            foreach (var month in Enumerable.Range(1, 12))
+            {
+                builder.OpenElement(42, "div");
+                builder.AddAttribute(43, "class", "month");
+                builder.AddAttribute(44, "onclick", EventCallback.Factory.Create(this, () => MonthOnChange(new ChangeEventArgs { Value = month })));
+                builder.AddContent(45, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month).Substring(0, 3));
+                builder.CloseElement();
+            }
             builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement(); 
+
         }
-        builder.CloseElement();
-        //end of calendar weekdays
+        else {
 
-        //start of calendar days
-        builder.OpenElement(40, "div");
-        builder.AddAttribute(41, "class", "calendar-days");        
+            //start of calendar body
+            builder.OpenElement(32, "div");
+            builder.AddAttribute(33, "class", "calendar-body");
 
-        foreach (int pDay in Enumerable.Range(GetPreviousMonthStartRange(), GetPreviousMonthRange()))
-        {
-            builder.OpenElement(44, "button");
-            builder.AddAttribute(45, "type", "button");
-            builder.AddAttribute(47, "title", pDay.ToString());
-            builder.AddAttribute(48, "aria-readonly", true);
-            builder.AddAttribute(49, "tabindex", "-1");
-            builder.AddAttribute(49, "disabled", PreviousDayIsDisabled(pDay));
-            builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DayPreviousSelected(pDay)));
-            builder.AddAttribute(49, "class", SetPreviousActiveDay(pDay));
-            builder.AddContent(52, pDay);
+            //start of calendar weekdays
+            builder.OpenElement(34, "div");
+            builder.AddAttribute(35, "class", "calendar-weekdays");
+
+            foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+            {
+                builder.OpenElement(36, "div");
+                builder.AddAttribute(37, "title", DateTimeFormatInfo.CurrentInfo.GetDayName((DayOfWeek)day));
+                builder.AddAttribute(38, "class", "calendar-weekday");
+                builder.AddContent(39, DateTimeFormatInfo.CurrentInfo.GetAbbreviatedDayName((DayOfWeek)day).Substring(0, 1));
+                builder.CloseElement();
+            }
             builder.CloseElement();
-        }
+            //end of calendar weekdays
 
-        foreach (int day in Enumerable.Range(1, DateTime.DaysInMonth(currentYear, currentMonth)))
-        {
+            //start of calendar days
+            builder.OpenElement(40, "div");
+            builder.AddAttribute(41, "class", "calendar-days");        
 
-            builder.OpenElement(44, "button");
-            builder.AddAttribute(45, "type", "button");
-            builder.AddAttribute(47, "title", day.ToString());
-            builder.AddAttribute(48, "aria-readonly", true);
-            builder.AddAttribute(49, "tabindex", "-1");
-            builder.AddAttribute(49, "disabled", DayIsDisabled(day));
-            builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DaySelected(day)));
-            builder.AddAttribute(49, "class", SetActiveDay(day));            
-            builder.AddContent(52, day);
+            foreach (int pDay in Enumerable.Range(GetPreviousMonthStartRange(), GetPreviousMonthRange()))
+            {
+                builder.OpenElement(44, "button");
+                builder.AddAttribute(45, "type", "button");
+                builder.AddAttribute(47, "title", pDay.ToString());
+                builder.AddAttribute(48, "aria-readonly", true);
+                builder.AddAttribute(49, "tabindex", "-1");
+                builder.AddAttribute(49, "disabled", PreviousDayIsDisabled(pDay));
+                builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DayPreviousSelected(pDay)));
+                builder.AddAttribute(49, "class", SetPreviousActiveDay(pDay));
+                builder.AddContent(52, pDay);
+                builder.CloseElement();
+            }
+
+            foreach (int day in Enumerable.Range(1, DateTime.DaysInMonth(currentYear, currentMonth)))
+            {
+
+                builder.OpenElement(44, "button");
+                builder.AddAttribute(45, "type", "button");
+                builder.AddAttribute(47, "title", day.ToString());
+                builder.AddAttribute(48, "aria-readonly", true);
+                builder.AddAttribute(49, "tabindex", "-1");
+                builder.AddAttribute(49, "disabled", DayIsDisabled(day));
+                builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DaySelected(day)));
+                builder.AddAttribute(49, "class", SetActiveDay(day));            
+                builder.AddContent(52, day);
+                builder.CloseElement();
+
+            }        
+
+            foreach (int nDay in Enumerable.Range(GetNextMonthStartRange(), GetNextMonthRange()))
+            {
+                builder.OpenElement(44, "button");
+                builder.AddAttribute(45, "type", "button");
+                builder.AddAttribute(47, "title", nDay.ToString());
+                builder.AddAttribute(48, "aria-readonly", true);
+                builder.AddAttribute(49, "tabindex", "-1");
+                builder.AddAttribute(49, "disabled", NextDayIsDisabled(nDay));
+                builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DayNextSelected(nDay)));
+                builder.AddAttribute(49, "class", SetNextActiveDay(nDay));
+                builder.AddContent(52, nDay);
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();
+            //end of calendar days
+
+            builder.OpenElement(54, "div");
+            builder.AddAttribute(55, "class", "calendar-footer");
+
+            builder.OpenElement(6, "button");
+            builder.AddAttribute(7, "type", "button");
+            builder.AddAttribute(8, "class", "calendar-footer-btn clear-btn");
+            builder.AddAttribute(9, "tabindex", "-1");
+            builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, ClearDate));
+            builder.AddContent(10, "Clear");
+            builder.CloseComponent();
+
+            builder.OpenElement(6, "button");
+            builder.AddAttribute(7, "type", "button");
+            builder.AddAttribute(8, "class", "calendar-footer-btn today-btn");
+            builder.AddAttribute(9, "tabindex", "-1");
+            builder.AddAttribute(9, "disabled", DisableTodayBtn());
+            builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, SetToday));
+            builder.AddContent(10, "Today");
+            builder.CloseComponent();
+
             builder.CloseElement();
 
-        }        
-
-        foreach (int nDay in Enumerable.Range(GetNextMonthStartRange(), GetNextMonthRange()))
-        {
-            builder.OpenElement(44, "button");
-            builder.AddAttribute(45, "type", "button");
-            builder.AddAttribute(47, "title", nDay.ToString());
-            builder.AddAttribute(48, "aria-readonly", true);
-            builder.AddAttribute(49, "tabindex", "-1");
-            builder.AddAttribute(49, "disabled", NextDayIsDisabled(nDay));
-            builder.AddAttribute(49, "onclick", EventCallback.Factory.Create(this, () => DayNextSelected(nDay)));
-            builder.AddAttribute(49, "class", SetNextActiveDay(nDay));
-            builder.AddContent(52, nDay);
             builder.CloseElement();
-        }
-
-        builder.CloseElement();
-        //end of calendar days
-
-        builder.OpenElement(54, "div");
-        builder.AddAttribute(55, "class", "calendar-footer");
-
-        builder.OpenElement(6, "button");
-        builder.AddAttribute(7, "type", "button");
-        builder.AddAttribute(8, "class", "calendar-footer-btn clear-btn");
-        builder.AddAttribute(9, "tabindex", "-1");
-        builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, ClearDate));
-        builder.AddContent(10, "Clear");
-        builder.CloseComponent();
-
-        builder.OpenElement(6, "button");
-        builder.AddAttribute(7, "type", "button");
-        builder.AddAttribute(8, "class", "calendar-footer-btn today-btn");
-        builder.AddAttribute(9, "tabindex", "-1");
-        builder.AddAttribute(9, "disabled", DisableTodayBtn());
-        builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, SetToday));
-        builder.AddContent(10, "Today");
-        builder.CloseComponent();
-
-        builder.CloseElement();
-
-        builder.CloseElement();
         //end of calendar body
+
+        }
+
+        
 
         builder.CloseElement();
 
     };
 
 }
+
+<script>
+    function initializeScrollEvent(dotNetHelper, id) {
+    console.log(dotNetHelper);
+    const calendarBody = document.getElementById(id);
+
+    console.log(calendarBody);
+
+
+    if (calendarBody) {
+        calendarBody.addEventListener('scroll', () => {
+            console.log(calendarBody.scrollTop, calendarBody.clientHeight, calendarBody.scrollHeight);
+            if (calendarBody.scrollTop + calendarBody.clientHeight >= calendarBody.scrollHeight) {
+                dotNetHelper.invokeMethodAsync('LoadMoreYears');
+            } else if (calendarBody.scrollTop === 0) {
+                dotNetHelper.invokeMethodAsync('LoadPreviousYears');
+            }
+        });
+    };
+
+}
+</script>
 
 <style>
     .calendar {
@@ -701,6 +875,8 @@
         box-shadow: 2px 2px 5px .2px lightgray;
         font-family: Arial, sans-serif;
         font-size: .8em;
+        
+        
     }
     .calendar-header {
         display: flex;
@@ -711,6 +887,8 @@
     .calendar-body {
         display: flex;
         flex-direction: column;
+        max-height: 210px;
+        overflow-y: auto;
     }
 
     .calendar-weekdays, .calendar-days {
@@ -841,5 +1019,41 @@
         outline:none;
     }
 
+    .calendar-monthyear-view {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .calendar-monthyear-view > .year {
+        
+        height: 2.5em;
+        width:100%;
+        padding: .5em;
+        font-weight: bold;
+        border-bottom: solid 1px lightgray;
+        cursor:pointer;
+        text-align: center;
+    }
+
+    .calendar-monthyear-view > .year:hover {
+        opacity: .8;
+        background-color: lightblue;
+        
+    }
+
+    .calendar-monthyear-view > .months {
+        display: none;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        width: 100%;
+    }
+
+    
+
 
 </style>       
+

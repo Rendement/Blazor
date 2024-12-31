@@ -4,10 +4,38 @@
 
 <h5>Number</h5>
 
-<ReNumber class="re-input" @bind-Value="numberOne"></ReNumber>
+<ReNumber class="re-input" ValueExpression="@(() => numberOne)" Value="@numberOne" @oninput="OnInput" />
+@numberOne
+
+<ReNumber class="re-input" @bind-Value="@numberTwo"></ReNumber>
+@numberTwo
+
+<ReNumber class="re-input" Value="@numberThree" ValueExpression="@(() => numberThree)" @oninput="@(e => numberThree = Int32.Parse(e.Value.ToString()))"></ReNumber>
+@numberThree
+
 
 @code {
     
     private int? numberOne { get; set; } = 1;
+    private int? numberTwo { get; set; } = 2;
+    private int? numberThree { get; set; } = 3;
 
+    private void OnChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int result))
+        {
+            numberOne = result;
+        }
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+
+        numberOne = int.TryParse(e.Value.ToString(), out int result) ? result : null;
+ 
+        @* if (int.TryParse(e.Value.ToString(), out int result))
+        {
+            numberOne = result;
+        } *@
+    }
 }
