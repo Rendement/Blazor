@@ -29,7 +29,7 @@
             onfocus="@(() => InputFocusIn(_monthId))"
             readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" />
 
-            <span tabindex="-1">/</span>
+            <span class="non-selectable" tabindex="-1">/</span>
 
             <input id="@_dayId" @key="_dateInput.Day.Id"
             onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Day, _monthId, _yearId))"
@@ -46,7 +46,7 @@
             onfocus="@(() => InputFocusIn(_dayId))"
             readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" />
 
-            <span tabindex="-1">/</span>
+            <span class="non-selectable" tabindex="-1">/</span>
 
             <input id="@_yearId" @key="_dateInput.Year.Id"
             onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Year, _dayId, null))"
@@ -153,7 +153,12 @@
 
     private DateInput _dateInput = new DateInput() { Day = new Date(), Month = new Date(), Year = new Date() };
 
-    private void CalendarBtnOnClick() => JSRuntime.InvokeVoidAsync("CalendarButtonOnClick", _id, _datepickerId);
+    private void CalendarBtnOnClick(){
+
+        Console.WriteLine($"Id: {_id}, DatepickerId: {_datepickerId}");
+
+        JSRuntime.InvokeVoidAsync("CalendarButtonOnClick", _id, _datepickerId);
+    }
 
     protected override async Task OnInitializedAsync()
     {        
@@ -659,6 +664,8 @@
 
         wrapperElement.addEventListener('focusout', (event) => {
 
+            console.log(event.target);
+
             const calendarElement = (event.target.classList.contains("fe-datepicker-calendar-btn") || event.target.classList.contains("calendar-header-action"));
             const calendarHeader = (event.relatedTarget != null && (event.relatedTarget.classList.contains("calendar-header-action") ||
                 event.relatedTarget.classList.contains("calendar-day") ||
@@ -669,8 +676,8 @@
 
            if((calendarElement && !calendarHeader) || calendarAfterToday || (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar)){
                
-                const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
-                calendarElement.classList.remove("calendar-show");               
+                //const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
+                //calendarElement.classList.remove("calendar-show");               
 
             }
 
@@ -933,5 +940,12 @@
     .fe-floating.fe-datepicker-wrapper[readonly]:has(.fe-datepicker-container:not([currentvalue])) > .fe-label {
         display:none;
     }
+
+    .non-selectable {
+    user-select: none; /* Standard syntax */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+}
 
 </style>

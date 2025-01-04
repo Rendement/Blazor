@@ -1,0 +1,145 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+
+<div class="re-accordion" id="@_accordionId">
+
+    <div class="re-accordion-header" id="@_headerId" @onclick="ToggleAccordion">
+
+        @Header
+
+    </div>
+
+    <div class="re-accordion-content" id="@_contentId">
+
+        <div class="@("re-accordion-content-body" + (_show ? " show" : ""))" id="@_contentBodyId">
+            
+            @Content
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@code {
+
+    [Parameter, EditorRequired]
+    public RenderFragment? Header { get; set; }
+
+    [Parameter]
+    public RenderFragment? Content { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsOpen { get; set; }   
+
+    [Parameter]
+    public bool Close { get; set; } = false;
+
+
+    [Parameter]
+    public bool Open { get; set; } = false;
+
+    private bool _show = false;
+    private bool _previousClose;
+
+    private string _accordionId = Guid.NewGuid().ToString();
+    private string _headerId = Guid.NewGuid().ToString();
+    private string _contentId = Guid.NewGuid().ToString();
+    private string _contentBodyId = Guid.NewGuid().ToString();    
+
+    private async Task ToggleAccordion()
+    {
+
+        _show = !_show;
+        await IsOpen.InvokeAsync(_show);
+        await JSRuntime.InvokeVoidAsync("onToggle", _accordionId, _headerId, _contentId, _contentBodyId);
+
+        
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (Open)
+        {
+            _show = true;
+            await IsOpen.InvokeAsync(_show);
+            await Task.Run(async () => await JSRuntime.InvokeVoidAsync("onToggle", _accordionId, _headerId, _contentId, _contentBodyId));
+            
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Close != _previousClose)
+        {
+            _previousClose = Close;
+
+            if (_show && Close)
+            {                
+                _show = false;
+                await JSRuntime.InvokeVoidAsync("onToggle", _accordionId, _headerId, _contentId, _contentBodyId);
+                await IsOpen.InvokeAsync(_show);
+            }
+        }
+
+        
+
+    }
+
+}
+
+<script>
+
+    onToggle = function (accordionId, headerId, contentId, contentBodyId) {
+
+        var accordion = document.getElementById(accordionId);
+        var header = document.getElementById(headerId);
+        var content = document.getElementById(contentId);
+        var contentBody = document.getElementById(contentBodyId);
+
+        if(accordion && header && content && contentBody)
+        {
+            if (contentBody.style.height == "" || contentBody.style.height == '0px') {
+                content.style.zIndex = '1';
+                contentBody.style.height = contentBody.scrollHeight + 'px';
+            }
+            else {
+                contentBody.style.height = '0px';
+                setTimeout(function () {                
+                    content.style.zIndex = '-1';
+                }, 300);            
+            }
+        }
+
+    }
+
+</script>
+
+<style>
+
+    .re-accordion {
+        position: relative;
+    }
+
+    .re-accordion-header {        
+        position: relative;
+        cursor: pointer;
+    }
+
+    .re-accordion-content {
+        position: relative;
+        overflow: hidden;
+        top: 0;
+        z-index: -1;
+    }    
+
+    .re-accordion-content-body {
+        position: relative;
+        transition: height 0.3s ease-in-out;
+        height: 0px;
+    }
+
+</style>

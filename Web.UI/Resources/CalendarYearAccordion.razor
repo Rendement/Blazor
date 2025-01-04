@@ -1,0 +1,451 @@
+@using System.Globalization
+@using web.ui.Components
+
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+@* <link href="css/CalendarYearAccordion.css" rel="stylesheet" /> *@
+
+
+<div class="re-calendar" id="@_rolodexId">
+
+    <div class="re-calendar-container" id="@_rolodexContainerId">
+                   
+        @foreach (var year in years)
+        {  
+            <div class="re-accordion" id="@(year + "_" + _accordionId)">
+
+                <div class="re-accordion-header" id="@(year + "_" + _headerId)" @onclick="@(() => ToggleAccordion(year.ToString()))">
+
+                    <div class="re-calendar-year" @onclick="() => YearSelected(year)" id="@year">
+                        @year
+                    </div>
+
+                </div>
+
+                <div class="re-accordion-content" id="@(year + "_" + _contentId)">
+
+                    <div class="@("re-accordion-content-body" + (_show ? " show" : ""))" id="@(year + "_" + _contentBodyId)">
+                        
+                        <div class="re-calendar-months">
+                            @foreach (int month in Enumerable.Range(1, 12))
+                            {
+                                <div class="month" @onclick="@(() => MonthSelected(year, month))">
+                                    @GetAbbreviatedMonth(month)
+                                </div>
+                            }
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        }
+        
+    </div>
+
+</div>
+
+
+<style>
+
+    .re-calendar{
+
+        overflow: hidden;
+        @* border: 1px solid #ccc;
+        box-shadow: 0 0 5px #ccc; *@
+        padding: .5em;
+        @* border-radius: .5em; *@
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: small;
+    }
+
+    .re-calendar-container{
+        overflow-y: auto;
+        height: 17.5em;
+        width: 15.25em;
+    }
+
+    .re-calendar-year{
+        height: 2em;
+        cursor: pointer;
+        background-color: #dfdfdf;
+        border-bottom: 1px solid #fff;
+        padding: .3em;
+    }
+
+    .re-calendar-months{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #fff;
+        position: relative;
+    }
+
+    .re-calendar-months div{
+        width: calc(100% / 4);
+        cursor: pointer;
+        padding: .5em;
+    }
+
+    .re-calendar-months div:hover{
+        background-color: #f0f0f0;
+        border-radius: .25em;
+    }
+
+    @* //////////////////Accordion//////////////////// *@
+    .re-accordion {
+        position: relative;
+    }
+
+    .re-accordion-header {        
+        position: relative;
+        cursor: pointer;
+    }
+
+    .re-accordion-content {
+        position: relative;
+        overflow: hidden;
+        top: 0;
+        z-index: -1;
+    }    
+
+    .re-accordion-content-body {
+        position: relative;
+        transition: height 0.3s ease-in-out;
+        height: 0px;
+    }
+</style>
+
+
+@code{
+    [Parameter]
+    public int Year { get; set; } = DateTime.Now.Year;
+
+    private bool _close { get; set; } = false;
+
+    private IList<int> years = new List<int>();
+    private int selectedYear;
+
+    private string _rolodexId = Guid.NewGuid().ToString();
+    private string _rolodexContainerId = Guid.NewGuid().ToString();
+    private string _calendarMonthsId = Guid.NewGuid().ToString();
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedYear = Year;
+        for (int i = selectedYear; i < selectedYear + 20; i++)
+        {
+            years.Add(i);
+        }   
+        await Task.Run(async () => 
+        {
+            
+            @* if (Open)
+            {
+                _show = true;
+                await IsOpen.InvokeAsync(_show);
+                await Task.Run(async () => await JSRuntime.InvokeVoidAsync("onToggle", _accordionId, _headerId, _contentId, _contentBodyId));
+                
+            }  *@
+
+
+            await JSRuntime.InvokeVoidAsync("initializeScrollEvent", DotNetObjectReference.Create(this), _rolodexId, _rolodexContainerId);
+            await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "auto", _accordionId, _headerId, _contentId, _contentBodyId);
+            
+        });   
+
+         
+
+    }
+    private void AddYears(int year)
+    {
+        years.Clear();
+        
+        StateHasChanged();
+    }
+
+    private async Task YearSelected(int year)
+    {   
+
+        if (selectedYear != year)
+        {
+            selectedYear = year;
+            await Task.Delay(300);
+            await JSRuntime.InvokeVoidAsync("scrollToTop", year, "smooth"); 
+            StateHasChanged(); 
+        }
+               
+    }
+
+    private void MonthSelected(int year, int month)
+    {
+        Console.WriteLine($"Year: {year}, Month: {month}");
+    }
+
+    private string GetAbbreviatedMonth(int month)
+    {
+        return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month);
+
+    }
+        
+    [JSInvokable]
+    public void LoadContainerMoreYears()
+    {
+
+        Console.WriteLine("LoadContainerMoreYears");
+
+
+        AddContainerMoreNextYears();
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void LoadContainerPreviousYears()
+    {
+
+        Console.WriteLine("LoadContainerPreviousYears");
+
+        AddContainerMorePreviousYears();
+        
+        StateHasChanged();
+    }
+
+    private void AddContainerMoreNextYears()
+    {
+
+
+        int lastYear = years[years.Count - 1];
+        years.Add(lastYear + 1);
+        years.RemoveAt(0);
+        
+    }
+
+    private void AddContainerMorePreviousYears()
+    {
+        int firstYear = years[0];
+        years.Insert(0, firstYear - 1);
+        years.RemoveAt(years.Count - 1);
+    }
+
+
+
+    ////////////////Accordion////////////////////
+    
+    [Parameter]
+    public EventCallback<bool> IsOpen { get; set; }   
+
+    [Parameter]
+    public bool Close { get; set; } = false;
+
+
+    [Parameter]
+    public bool Open { get; set; } = false;
+
+    private bool _show = false;
+    private bool _previousClose;
+
+    private string _accordionId = Guid.NewGuid().ToString();
+    private string _headerId = Guid.NewGuid().ToString();
+    private string _contentId = Guid.NewGuid().ToString();
+    private string _contentBodyId = Guid.NewGuid().ToString();    
+
+    private async Task ToggleAccordion(string year)
+    {
+
+        _show = !_show;
+        await IsOpen.InvokeAsync(_show);
+        await JSRuntime.InvokeVoidAsync("onToggle", year + "_" + _accordionId, year + "_" + _headerId, year + "_" + _contentId, year + "_" + _contentBodyId);
+
+        
+    }
+    
+    @* protected override async Task OnInitializedAsync()
+    {
+        if (Open)
+        {
+            _show = true;
+            await IsOpen.InvokeAsync(_show);
+            await Task.Run(async () => await JSRuntime.InvokeVoidAsync("onToggle", _accordionId, _headerId, _contentId, _contentBodyId));
+            
+        }
+    } *@
+
+    protected override async Task OnParametersSetAsync()
+    {
+        @* if (Close != _previousClose)
+        {
+            _previousClose = Close;
+
+            if (_show && Close)
+            {                
+                _show = false;
+                await JSRuntime.InvokeVoidAsync("onToggle", _accordionId, _headerId, _contentId, _contentBodyId);
+                await IsOpen.InvokeAsync(_show);
+            }
+        } *@
+
+        
+
+    }
+        
+
+}
+
+<script>
+    scrollToTop = function (year, behavior, accordionId, headerId, contentId, contentBodyId) {
+        
+        var element = document.getElementById(year);
+
+        if (element) {           
+            
+            element.scrollIntoView({ behavior: behavior, block: 'start', inline: 'nearest' });
+            onToggle(year + "_" + accordionId, year + "_" + headerId, year + "_" + contentId, year + "_" + contentBodyId);
+
+        }
+    }
+
+    function initializeScrollEvent(dotnetHelper, containerId, containerBodyId) {        
+
+        var container = document.getElementById(containerId);
+        var containerBody = document.getElementById(containerBodyId);
+
+        containerBody.addEventListener('wheel', function (event) {
+            const threshold = 0; // Adjust the threshold as needed
+
+            if (event.deltaY > 0) {
+                if (containerBody.scrollTop + containerBody.clientHeight >= containerBody.scrollHeight - threshold) {
+                    dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+                }
+            } else {
+                if (containerBody.scrollTop <= threshold) {
+                    dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+                }
+            }
+        });
+
+        @* containerBody.addEventListener('scroll', function (event) { 
+
+            if (containerBody.scrollTop === 0) {
+                dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+            }
+            else if (containerBody.scrollTop + containerBody.clientHeight >= containerBody.scrollHeight) {
+                dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+            }
+
+        }); *@
+
+        @* containerBody.addEventListener('touchmove', function () {
+
+            if (containerBody.scrollTop === 0) {
+                dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+            }
+            else if (containerBody.scrollTop + containerBody.clientHeight >= containerBody.scrollHeight) {
+                dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+            }
+
+        }); *@
+
+        @* thumb.addEventListener('mousedown', (e) => {            
+            
+            const startY = e.clientY; 
+            const startTop = thumb.offsetTop; 
+            let previousTop = startTop;
+            let mousedownDirection = -1;
+            let scrollInterval;
+            
+            const onMouseMove = (e) => {             
+                
+                const deltaY = e.clientY - startY; 
+                const newTop = Math.max(0, startTop + deltaY);
+
+                if(newTop + thumb.clientHeight <= scrollbar.clientHeight){
+                    thumb.style.top = `${newTop}px`; 
+                    const scrollPercent = newTop / (container.clientHeight - thumb.clientHeight); 
+                    content.scrollTop = scrollPercent * (content.scrollHeight - content.clientHeight); 
+
+                    if (previousTop > newTop) {
+                            mousedownDirection = 0;
+                        } else if (previousTop < newTop) {
+                            mousedownDirection = 1;
+                        }
+
+                    previousTop = newTop;                    
+
+                }else {
+
+                    mousedownDirection = 1;
+
+                }
+
+            }; 
+                    
+            const onMouseUp = () => { 
+
+                clearInterval(scrollInterval);
+                mousedownDirection = -1;
+                thumb.style.top = `${75}px`; 
+                document.removeEventListener('mousemove', onMouseMove); 
+                document.removeEventListener('mouseup', onMouseUp); 
+                document.removeEventListener('mousedown', onMouseDown);                
+                
+            };            
+
+            const onMouseDown = () => { 
+                
+                scrollInterval = setInterval(() => {
+
+                    if(mousedownDirection === 0){
+                        dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+                    }else if(mousedownDirection === 1){
+                        dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+                    }
+
+                }, 100); 
+                                
+            };
+
+            document.addEventListener('mousemove', onMouseMove); 
+            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('mousedown', onMouseDown); *@
+                            
+        //});
+
+
+        ////////////Accordion///////////////////////////////////
+        onToggle = function (accordionId, headerId, contentId, contentBodyId) {
+console.log(accordionId, headerId, contentId, contentBodyId);
+        var accordion = document.getElementById(accordionId);
+        var header = document.getElementById(headerId);
+        var content = document.getElementById(contentId);
+        var contentBody = document.getElementById(contentBodyId);
+
+        if(accordion && header && content && contentBody)
+        {
+            if (contentBody.style.height == "" || contentBody.style.height == '0px') {
+                content.style.zIndex = '1';
+                contentBody.style.height = contentBody.scrollHeight + 'px';
+            }
+            else {
+                contentBody.style.height = '0px';
+                setTimeout(function () {                
+                    content.style.zIndex = '-1';
+                }, 300);            
+            }
+        }
+
+    }
+
+        
+
+    }
+
+
+</script>

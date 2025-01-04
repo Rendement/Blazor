@@ -1,10 +1,11 @@
 @using System.Globalization
 @using Web.UI.Classes
 @using Microsoft.JSInterop
+@using web.ui.Components
 @inherits Microsoft.AspNetCore.Components.ComponentBase
 @inject IJSRuntime JSRuntime
 
-@* @CalendarFragment *@
+@CalendarFragment
 
 @code {
 
@@ -538,7 +539,13 @@
         //}
     }
 
+    private string _calendarRoloId = Guid.NewGuid().ToString();
+    private string _calendarRoloContainerId = Guid.NewGuid().ToString();
+    private string GetAbbreviatedMonth(int month)
+    {
+        return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month);
 
+    }
 
     private RenderFragment? CalendarFragment { get; set; }
 
@@ -576,87 +583,6 @@
         
 
         
-        
-
-        //start of month select
-        @* builder.OpenElement(11, "div");
-        builder.AddAttribute(12, "class", "calendar-header-action select-month");
-
-        builder.OpenElement(12, "input");
-        builder.AddAttribute(13, "type", "text");
-        builder.AddAttribute(13, "readonly", "readonly");
-        builder.AddAttribute(13, "class", "");
-        builder.AddAttribute(14, "value", CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(currentMonth));
-        builder.AddAttribute(29, "tabindex", "-1");
-        builder.AddAttribute(15, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, MonthOnChange));
-        builder.CloseComponent();        
-
-        builder.OpenElement(16, "div");
-        builder.AddAttribute(17, "class", "calendar-header-action iterate-date");
-
-        builder.OpenElement(17, "button");
-        builder.AddAttribute(18, "type", "button");
-        builder.AddAttribute(29, "tabindex", "-1");
-        builder.AddAttribute(19, "class", "calendar-header-action calendar-day-btn");
-        builder.AddAttribute(20, "onclick", EventCallback.Factory.Create(this, IncrementSelectMonth));
-        builder.OpenElement(10, "i");
-        builder.AddAttribute(11, "class", "fa-solid fa-caret-up");
-        builder.CloseElement();
-        builder.CloseElement();
-
-        builder.OpenElement(17, "button");
-        builder.AddAttribute(18, "type", "button");
-        builder.AddAttribute(29, "tabindex", "-1");
-        builder.AddAttribute(19, "class", "calendar-header-action calendar-day-btn");
-        builder.AddAttribute(20, "onclick", EventCallback.Factory.Create(this, DecrementSelectMonth));
-        builder.OpenElement(10, "i");
-        builder.AddAttribute(11, "class", "fa-solid fa-caret-down");
-        builder.CloseElement();
-        builder.CloseElement();        
-        builder.CloseElement();
-        builder.CloseElement(); *@
-        //end of month select
-
-        //start of year input
-        @* builder.OpenElement(11, "div");
-        builder.AddAttribute(12, "class", "calendar-header-action select-year");
-
-        builder.OpenElement(19, "input");
-        builder.AddAttribute(20, "class", "calender-header-year-input");
-        builder.AddAttribute(21, "value", currentYear);
-        builder.AddAttribute(29, "tabindex", "-1");
-        builder.AddAttribute(29, "readonly", "readonly"); 
-        builder.AddAttribute(22, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, YearOnChange));
-        builder.AddAttribute(23, "type", "number");
-        builder.AddAttribute(24, "min", _minYear);
-        builder.AddAttribute(25, "max", _maxYear);
-        builder.CloseElement();
-
-        builder.OpenElement(16, "div");
-        builder.AddAttribute(17, "class", "calendar-header-action iterate-date");
-
-        builder.OpenElement(17, "button");
-        builder.AddAttribute(18, "type", "button");
-        builder.AddAttribute(29, "tabindex", "-1");
-        builder.AddAttribute(19, "class", "calendar-header-action calendar-day-btn");
-        builder.AddAttribute(20, "onclick", EventCallback.Factory.Create(this, IncrementSelectYear));
-        builder.OpenElement(10, "i");
-        builder.AddAttribute(11, "class", "fa-solid fa-caret-up");
-        builder.CloseElement();
-        builder.CloseElement();
-
-        builder.OpenElement(17, "button");
-        builder.AddAttribute(18, "type", "button");
-        builder.AddAttribute(29, "tabindex", "-1");
-        builder.AddAttribute(19, "class", "calendar-header-action calendar-day-btn");
-        builder.AddAttribute(20, "onclick", EventCallback.Factory.Create(this, DecrementSelectYear));
-        builder.OpenElement(10, "i");
-        builder.AddAttribute(11, "class", "fa-solid fa-caret-down");
-        builder.CloseElement();
-        builder.CloseElement();
-        builder.CloseElement();
-
-        builder.CloseElement(); *@
         //end of year input
 
         //start of next button
@@ -693,46 +619,13 @@
 
         if (ToggleYearMonthView)
         {
-            builder.OpenElement(31, "div");
-            builder.AddAttribute(32, "class", "calendar-body");
-            builder.AddAttribute(33, "id", calendarBodyId);
-            builder.AddElementReferenceCapture(33, element => calendarBodyRef = element);
-
-            
-            
-            
-            builder.OpenElement(33, "div");
-
-            builder.OpenElement(34, "div");
-            builder.AddAttribute(35, "class", "calendar-monthyear-view");
-            
-            
-
-            @foreach(var year in years)
-            {
-                builder.OpenElement(34, "div");
-                builder.AddAttribute(35, "class", "year");
-                builder.AddAttribute(36, "onclick", EventCallback.Factory.Create(this, () => YearOnChange(new ChangeEventArgs { Value = year })));
-                builder.AddContent(37, year);
-                builder.CloseElement();
-            }
 
 
-            
-            builder.OpenElement(40, "div");
-            builder.AddAttribute(41, "class", "months");
-            foreach (var month in Enumerable.Range(1, 12))
-            {
-                builder.OpenElement(42, "div");
-                builder.AddAttribute(43, "class", "month");
-                builder.AddAttribute(44, "onclick", EventCallback.Factory.Create(this, () => MonthOnChange(new ChangeEventArgs { Value = month })));
-                builder.AddContent(45, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month).Substring(0, 3));
-                builder.CloseElement();
-            }
-            builder.CloseElement();
-            builder.CloseElement();
-            builder.CloseElement();
-            builder.CloseElement(); 
+            builder.OpenComponent<CalendarYearAccordion>(0);
+            builder.CloseComponent();
+
+
+
 
         }
         else {

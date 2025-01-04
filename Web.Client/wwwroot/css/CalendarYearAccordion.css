@@ -1,0 +1,67 @@
+.re-calendar{
+
+    overflow: hidden;
+
+    padding: .5em;
+    
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: small;
+}
+
+.re-calendar-container{
+    overflow-y: auto;
+    height: 17.5em;
+    width: 15.25em;
+}
+
+.re-calendar-year{
+    height: 2em;
+    cursor: pointer;
+    background-color: #dfdfdf;
+    border-bottom: 1px solid #fff;
+    padding: .3em;
+}
+
+.re-calendar-months{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #fff;
+    position: relative;
+}
+
+.re-calendar-months div{
+    width: calc(100% / 4);
+    cursor: pointer;
+    padding: .5em;
+}
+
+.re-calendar-months div:hover{
+    background-color: #f0f0f0;
+    border-radius: .25em;
+}
+
+
+.re-accordion {
+    position: relative;
+}
+
+.re-accordion-header {        
+    position: relative;
+    cursor: pointer;
+}
+
+.re-accordion-content {
+    position: relative;
+    overflow: hidden;
+    top: 0;
+    z-index: -1;
+}    
+
+.re-accordion-content-body {
+    position: relative;
+    transition: height 0.3s ease-in-out;
+    height: 0px;
+}

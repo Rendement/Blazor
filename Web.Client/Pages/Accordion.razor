@@ -1,0 +1,37 @@
+@page "/accordion"
+
+<ReAccordion Close="@_closeOne" IsOpen="@((isOpen) => { _closeOne = !isOpen; })">
+    <Header>Header One</Header>
+    <Content>@content</Content>
+</ReAccordion>
+
+<button type="button" @onclick="() => { _closeOne = !_closeOne; }">Close One</button>
+
+<ReAccordion Close="@_closeTwo" IsOpen="@((isOpen) => { _closeTwo = !isOpen; })">
+    <Header>Header Two</Header>
+    <Content>@content</Content>
+</ReAccordion>
+
+<button type="button" @onclick="() => { _closeTwo = !_closeTwo; }">Close Two</button>
+
+<ReAccordion Close="@_closeThree" IsOpen="@((isOpen) => { _closeThree = !isOpen; })" Open="true">
+    <Header>Header Three</Header>
+    <Content>@content</Content>
+</ReAccordion>
+
+<button type="button" @onclick="() => { _closeThree = !_closeThree; }">Close Three</button>
+
+@code{
+
+    private bool _closeOne = false;
+    private bool _closeTwo = false;
+    private bool _closeThree = false;
+    private string header = "Header for Accordion";
+    private string content = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
+}
+
+<style>
+    button{
+        width:150px;
+    }
+</style>
