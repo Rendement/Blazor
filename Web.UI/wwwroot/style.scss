@@ -93,7 +93,7 @@ $theme-colors: map.merge($theme-colors, (
   "custom": #ff0000
 ));
 
-input{
+input, div{
 
     &.re-input{
         padding: .5rem;

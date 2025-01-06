@@ -57,6 +57,11 @@
 
     protected override void OnParametersSet()
     {
+
+        if(ToggleAccordion || !ToggleAccordion){
+            ToggleYearMonthView = false;
+        }
+
         base.OnParametersSet();
         InitializeMinMaxYears();
         SetCalendarOnInit(Year, Month, Day);
@@ -461,6 +466,9 @@
         return false;
     }
 
+    [Parameter]
+    public bool ToggleAccordion { get; set; } = false;
+
     private bool ToggleYearMonthView = false;
 
     private void ToggleCalendarView()
@@ -489,23 +497,14 @@
     [JSInvokable]
     public void LoadMoreYears()
     {
-
-        Console.WriteLine("LoadMoreYears");
-
-
-        AddMoreNextYears();
-        
+        AddMoreNextYears();        
         StateHasChanged();
     }
 
     [JSInvokable]
     public void LoadPreviousYears()
     {
-
-        Console.WriteLine("LoadPreviousYears");
-
-        AddMorePreviousYears();
-        
+        AddMorePreviousYears();        
         StateHasChanged();
     }
 
@@ -564,54 +563,52 @@
         builder.AddAttribute(5, "class", "calendar-header");      
 
         //start of month/year
-        builder.OpenElement(6, "div");
-        builder.AddAttribute(7, "class", "calendar-header-action");
-        builder.AddContent(8, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(currentMonth));//current month
-        builder.AddContent(11, currentYear);//current year
-        builder.OpenElement(12, "button");
-        builder.AddAttribute(13, "type", "button");
-        builder.AddAttribute(14, "class", "calendar-header-action calendar-monthyear-btn");
-        builder.AddAttribute(15, "tabindex", "-1");
-        builder.AddAttribute(16, "onclick", EventCallback.Factory.Create(this, () => ToggleCalendarView()));
-        builder.OpenElement(10, "i");
-        builder.AddAttribute(11, "class", "fa-solid fa-caret-down");
-        builder.CloseElement();
-        builder.CloseElement();
-        builder.CloseElement();  
-
-
-        
-
-        
-        //end of year input
-
-        //start of next button
-        builder.OpenElement(4, "div");
-        builder.AddAttribute(5, "class", "calendar-header-action iterate-monthyear");
-        builder.OpenElement(27, "button");
-        builder.AddAttribute(28, "type", "button");
-        builder.AddAttribute(29, "class", "calendar-header-action calendar-monthyear-btn");
-        builder.AddAttribute(29, "tabindex", "-1");
-        builder.AddAttribute(30, "onclick", EventCallback.Factory.Create(this, NextMonth));
-        builder.OpenElement(10, "i");
-        builder.AddAttribute(11, "class", "fa-solid fa-arrow-up");
-        builder.CloseElement();
-        builder.CloseElement();
-        //end of next button
-
-        //start of prev button//start of prev button
         builder.OpenElement(6, "button");
         builder.AddAttribute(7, "type", "button");
-        builder.AddAttribute(8, "class", "calendar-header-action calendar-monthyear-btn");
-        builder.AddAttribute(9, "tabindex", "-1");
-        builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, PreviousMonth));
-        builder.OpenElement(10, "i");
-        builder.AddAttribute(11, "class", "fa-solid fa-arrow-down");
-        builder.CloseElement();
-        builder.CloseElement();
-        //end of prev button 
+        builder.AddAttribute(16, "onclick", EventCallback.Factory.Create(this, () => ToggleCalendarView()));
+        builder.AddAttribute(7, "class", "calendar-header-action calendar-accordion-show-btn" + (ToggleYearMonthView ? " accordionShow" : ""));
+        builder.AddContent(8, CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(currentMonth));//current month
+        builder.AddContent(9, " ");
+        builder.AddContent(11, currentYear);//current year
+        builder.AddContent(12, " ");
+        builder.OpenElement(13, "i");
+        builder.AddAttribute(14, "class", "fa-solid fa-caret-down");
+        builder.CloseElement();        
+        builder.CloseElement(); //end of month/year        
+        //end of year input7
 
-        builder.CloseElement();
+        if (!ToggleYearMonthView){            
+
+            builder.OpenElement(4, "div");
+
+            //start of next button            
+            builder.AddAttribute(5, "class", "calendar-header-action iterate-monthyear");
+            builder.OpenElement(27, "button");
+            builder.AddAttribute(28, "type", "button");
+            builder.AddAttribute(29, "class", "calendar-header-action calendar-monthyear-btn");
+            builder.AddAttribute(29, "tabindex", "-1");
+            builder.AddAttribute(30, "onclick", EventCallback.Factory.Create(this, NextMonth));
+            builder.OpenElement(10, "i");
+            builder.AddAttribute(11, "class", "fa-solid fa-arrow-up");
+            builder.CloseElement();
+            builder.CloseElement();
+            //end of next button
+
+            //start of prev button//start of prev button
+            builder.OpenElement(6, "button");
+            builder.AddAttribute(7, "type", "button");
+            builder.AddAttribute(8, "class", "calendar-header-action calendar-monthyear-btn");
+            builder.AddAttribute(9, "tabindex", "-1");
+            builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, PreviousMonth));
+            builder.OpenElement(10, "i");
+            builder.AddAttribute(11, "class", "fa-solid fa-arrow-down");
+            builder.CloseElement();
+            builder.CloseElement();
+            //end of prev button 
+
+            builder.CloseElement();
+
+        }
 
         //end of calendar header
         builder.CloseElement();
@@ -620,12 +617,16 @@
         if (ToggleYearMonthView)
         {
 
-
             builder.OpenComponent<CalendarYearAccordion>(0);
+                @* builder.AddAttribute(33, "class", "calendar-body"); *@
+            builder.AddAttribute(1, "OnDateSelected", EventCallback.Factory.Create<CalendarDate>(this, (date) => {
+                currentYear = date.Year ?? DateTime.Now.Year;
+                currentMonth = date.Month ?? DateTime.Now.Month;  
+                currentDate = new DateTime(currentYear, currentMonth, 1);          
+                ToggleCalendarView();
+            }));
+            builder.AddAttribute(2, "Year", currentYear);
             builder.CloseComponent();
-
-
-
 
         }
         else {
@@ -737,15 +738,15 @@
 
 <script>
     function initializeScrollEvent(dotNetHelper, id) {
-    console.log(dotNetHelper);
+    
     const calendarBody = document.getElementById(id);
 
-    console.log(calendarBody);
+    
 
 
     if (calendarBody) {
         calendarBody.addEventListener('scroll', () => {
-            console.log(calendarBody.scrollTop, calendarBody.clientHeight, calendarBody.scrollHeight);
+            
             if (calendarBody.scrollTop + calendarBody.clientHeight >= calendarBody.scrollHeight) {
                 dotNetHelper.invokeMethodAsync('LoadMoreYears');
             } else if (calendarBody.scrollTop === 0) {
@@ -776,7 +777,18 @@
         justify-content: space-between;
         align-items: center;
         column-gap: .25em;
+        min-height: 2em;
     }
+
+    .calendar-accordion-show-btn {
+        border: none;
+        background-color: inherit;
+        padding: .25em;
+        border-radius: .25em;
+        background-color: inherit;
+        font-size:inherit;
+    }
+
     .calendar-body {
         display: flex;
         flex-direction: column;
@@ -846,6 +858,15 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        min-height: 2em;
+    }
+
+    .calendar-header-action:not(.iterate-monthyear) {
+        cursor: pointer;
+    }
+
+    .calendar-header-action.accordionShow {
+        opacity: .7;
     }
 
     .calendar-header-action.select-month, .calendar-header-action.select-year{

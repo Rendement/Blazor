@@ -4,6 +4,14 @@ namespace Web.UI.Classes
     {
         public CalendarDate() { }
 
+        public CalendarDate(int? year, int? month){
+            if (month < 1 || month > 12) throw new ArgumentOutOfRangeException(nameof(month));
+            if (year < 1) throw new ArgumentOutOfRangeException(nameof(year));
+
+            Month = month;
+            Year = year;
+        }
+
         public CalendarDate(int? day, int? month, int? year, string? type)
         {
 

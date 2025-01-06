@@ -86,20 +86,16 @@
     </div>
 
     <CalendarPopup 
-    Day="@(string.IsNullOrEmpty(_dateInput.Day.Value) ? (int?)null : int.Parse(_dateInput.Day.Value))"
-    Month="@(string.IsNullOrEmpty(_dateInput.Month.Value) ? (int?)null : int.Parse(_dateInput.Month.Value))"
-    Year="@(string.IsNullOrEmpty(_dateInput.Year.Value) ? (int?)null : int.Parse(_dateInput.Year.Value))"
-    Max="@Max"
-    Min="@Min"
-    OnDateSelected="CalendarPopupDateSelected"
-    OnToday="OnCalendarTodaySelected"
-    class="fe-datepicker-calendar top"
-    id="@_id"
-    tabindex="0">
-    </CalendarPopup>
-
-    
-
+        Day="@(string.IsNullOrEmpty(_dateInput.Day.Value) ? (int?)null : int.Parse(_dateInput.Day.Value))"
+        Month="@(string.IsNullOrEmpty(_dateInput.Month.Value) ? (int?)null : int.Parse(_dateInput.Month.Value))"
+        Year="@(string.IsNullOrEmpty(_dateInput.Year.Value) ? (int?)null : int.Parse(_dateInput.Year.Value))"
+        Max="@Max"
+        Min="@Min"
+        OnDateSelected="CalendarPopupDateSelected"
+        class="fe-datepicker-calendar top"
+        id="@_id"
+        tabindex="0"
+        ToggleAccordion="@_toggleAccordion"></CalendarPopup>
 
 
     <div class="fe-label ">@Label</div>
@@ -155,8 +151,7 @@
 
     private void CalendarBtnOnClick(){
 
-        Console.WriteLine($"Id: {_id}, DatepickerId: {_datepickerId}");
-
+        _toggleAccordion = !_toggleAccordion;
         JSRuntime.InvokeVoidAsync("CalendarButtonOnClick", _id, _datepickerId);
     }
 
@@ -648,7 +643,11 @@
             CloseCalendar();
         }
         HighlightText(id);
-    }    
+    }  
+
+    private bool _toggleAccordion = false;  
+
+    
 
 }
 
@@ -664,7 +663,7 @@
 
         wrapperElement.addEventListener('focusout', (event) => {
 
-            console.log(event.target);
+            console.log(event.currentTarget, event.relatedTarget);
 
             const calendarElement = (event.target.classList.contains("fe-datepicker-calendar-btn") || event.target.classList.contains("calendar-header-action"));
             const calendarHeader = (event.relatedTarget != null && (event.relatedTarget.classList.contains("calendar-header-action") ||
@@ -672,13 +671,21 @@
                 event.relatedTarget.classList.contains("calendar-day-btn") ||
                 event.relatedTarget.classList.contains("calendar-footer-btn")));
             const calendarAfterToday = (event.target.classList.contains("fe-datepicker-calendar") && event.target.classList.contains("calendar-show") && event.relatedTarget == null);
-            const isCalendar = (event.relatedTarget != null && event.relatedTarget.classList.contains("fe-datepicker-calendar"));            
+            const isCalendar = (event.relatedTarget != null && event.relatedTarget.classList.contains("fe-datepicker-calendar"));    
 
-           if((calendarElement && !calendarHeader) || calendarAfterToday || (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar)){
-               
-                //const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
-                //calendarElement.classList.remove("calendar-show");               
+            console.log((calendarElement && !calendarHeader), calendarAfterToday, (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar));
+            
 
+           if((calendarElement && !calendarHeader) || calendarAfterToday || (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar)){               
+
+                @* const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
+                calendarElement.classList.remove("calendar-show");                *@
+
+            }
+
+            if(event.relatedTarget == null){
+                const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
+                calendarElement.classList.remove("calendar-show"); 
             }
 
         });
