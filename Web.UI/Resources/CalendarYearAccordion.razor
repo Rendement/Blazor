@@ -7,28 +7,28 @@
 @* <link href="css/CalendarYearAccordion.css" rel="stylesheet" /> *@
 
 
-<div class="re-calendar-accordion" id="@_rolodexId">
+<div class="calendar-accordion-container" id="@_rolodexId">
 
     <!--Years/Months-->
-    <div class="re-calendar-accordion-container" id="@_rolodexContainerId">
+    <div class="calendar-accordion" id="@_rolodexContainerId">
                    
         @foreach (var year in years)
         {  
-            <div class="re-accordion" id="@(year + "_" + _accordionId)">
+            <div class="accordion" id="@(year + "_" + _accordionId)">
 
-                <div class="re-accordion-header" id="@(year + "_" + _headerId)" @onclick="@(() => ToggleAccordion(year.ToString()))">
+                <div class="accordion-header" id="@(year + "_" + _headerId)" @onclick="@(() => ToggleAccordion(year.ToString()))">
 
-                    <div class="re-calendar-accordion-year" @onclick="() => YearSelected(year)" id="@year">
+                    <div class="calendar-accordion-year" @onclick="() => YearSelected(year)" id="@year">
                         @year
                     </div>
 
                 </div>
 
-                <div class="re-accordion-content" id="@(year + "_" + _contentId)">
+                <div class="accordion-content" id="@(year + "_" + _contentId)">
 
-                    <div class="@("re-accordion-content-body" + (_show ? " show" : ""))" id="@(year + "_" + _contentBodyId)">
+                    <div class="@("accordion-content-body" + (_show ? " show" : ""))" id="@(year + "_" + _contentBodyId)">
                         
-                        <div class="re-calendar-accordion-months">
+                        <div class="calendar-accordion-months">
                             @foreach (int month in Enumerable.Range(1, 12))
                             {
                                 <div class="month" @onclick="@(() => MonthSelected(year, month))">
@@ -48,13 +48,13 @@
     </div>
 
     <!--Scrollbar-->
-    <div class="re-calender-scrollbar-container">
-        <div class="re-calendar-accordion-scrollbar-buttons">
-            <button @onclick="AddContainerMorePreviousYears" type="button" class="scroll-up" id="@scrollUpId">▲</button>
-            <button @onclick="AddContainerMoreNextYears" type="button" class="scroll-down" id="@scrollDownId">▼</button>
+    <div class="calender-scrollbar-container">
+        <div class="calendar-accordion-scrollbar-buttons">
+            <button @onclick="AddPreviousOnClick" type="button" class="accordion-scroll-up" id="@scrollUpId">▲</button>
+            <button @onclick="AddMoreOnClick" type="button" class="accordion-scroll-down" id="@scrollDownId">▼</button>
         </div>
-        <div class="re-calendar-accordion-scrollbar">
-            <div class="re-calendar-accordion-thumb"></div>   
+        <div class="calendar-accordion-scrollbar">
+            <div class="calendar-accordion-thumb"></div>   
         </div>
 
     </div>
@@ -64,7 +64,7 @@
 
 <style>
 
-    .re-calendar-accordion{
+    .calendar-accordion-container{
 
         overflow: hidden;
         padding: .5em;
@@ -77,13 +77,13 @@
         user-select: none;
     }
 
-    .re-calendar-accordion-container{
+    .calendar-accordion{
         overflow: hidden;
         height: 17.5em;
         width: 15.25em;
     }
 
-    .re-calendar-accordion-year{
+    .calendar-accordion-year{
         height: 2em;
         cursor: pointer;
         background-color: #dfdfdf;
@@ -91,7 +91,7 @@
         padding: .3em;
     }
 
-    .re-calendar-accordion-months{
+    .calendar-accordion-months{
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -101,42 +101,42 @@
         position: relative;
     }
 
-    .re-calendar-accordion-months div{
+    .calendar-accordion-months div{
         width: calc(100% / 4);
         cursor: pointer;
         padding: .5em;
     }
 
-    .re-calendar-accordion-months div:hover{
+    .calendar-accordion-months div:hover{
         background-color: #f0f0f0;
         border-radius: .25em;
     }
 
     @* //////////////////Accordion//////////////////// *@
-    .re-accordion {
+    .accordion {
         position: relative;
     }
 
-    .re-accordion-header {        
+    .accordion-header {        
         position: relative;
         cursor: pointer;
     }
 
-    .re-accordion-content {
+    .accordion-content {
         position: relative;
         overflow: hidden;
         top: 0;
         z-index: -1;
     }    
 
-    .re-accordion-content-body {
+    .accordion-content-body {
         position: relative;
         transition: height 0.3s ease-in-out;
         height: 0px;
     }
 
     @* //////////////////Scrollbar//////////////////// *@
-    .re-calendar-accordion-scrollbar{
+    .calendar-accordion-scrollbar{
         position: relative; 
         top: 1.75em; 
         right: 0; 
@@ -146,7 +146,7 @@
         border-radius: .25em;        
     }
 
-    .re-calendar-accordion-thumb { 
+    .calendar-accordion-thumb { 
         position: relative; 
         top: 0; 
         width: 100%; 
@@ -157,11 +157,11 @@
         border-radius: .25em;
     }
 
-    .re-calendar-accordion-thumb:hover {
+    .calendar-accordion-thumb:hover {
         background-color: #666;
     }
 
-    .re-calendar-accordion-scrollbar-buttons{
+    .calendar-accordion-scrollbar-buttons{
         position: absolute;
         display: flex;
         flex-direction: column;
@@ -169,7 +169,7 @@
         height: 17.5em;
     }
 
-    .scroll-up, .scroll-down {
+    .accordion-scroll-up, .accordion-scroll-down {
 
         position:absolute;        
         border: none;
@@ -181,16 +181,16 @@
 
     }
 
-    .scroll-up:hover, .scroll-down:hover {
+    .accordion-scroll-up:hover, .accordion-scroll-down:hover {
         background-color: #888;
     }
 
-    .scroll-up {
+    .accordion-scroll-up {
         top: 0; 
             
     }
 
-    .scroll-down {
+    .accordion-scroll-down {
         bottom: 0;
     }
 
@@ -236,7 +236,13 @@
 
 
             await JSRuntime.InvokeVoidAsync("initializeScrollEvent", DotNetObjectReference.Create(this), _rolodexId, _rolodexContainerId);
-            await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "auto", _accordionId, _headerId, _contentId, _contentBodyId);
+            //await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "auto", _accordionId, _headerId, _contentId, _contentBodyId);
+            
+
+            await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "auto", _rolodexContainerId, Year + "_" + _accordionId);
+            await Task.Delay(300);
+
+            await JSRuntime.InvokeVoidAsync("onToggle", Year + "_" + _accordionId, Year + "_" + _headerId, Year + "_" + _contentId, Year + "_" + _contentBodyId);
             
         });   
 
@@ -290,6 +296,21 @@
         StateHasChanged();
     }
 
+    private void AddPreviousOnClick()
+    {
+
+        JSRuntime.InvokeVoidAsync("closeAllOpenAccordions", _rolodexContainerId);
+        Task.Delay(300);
+        AddContainerMorePreviousYears();
+    }
+
+    private void AddMoreOnClick()
+    {
+        JSRuntime.InvokeVoidAsync("closeAllOpenAccordions", _rolodexContainerId);
+        Task.Delay(300);
+        AddContainerMoreNextYears();
+    }
+
     private void AddContainerMoreNextYears()
     {
         int lastYear = years[years.Count - 1];
@@ -329,9 +350,20 @@
 
         _show = !_show;
         await IsOpen.InvokeAsync(_show);
-        await JSRuntime.InvokeVoidAsync("onToggle", year + "_" + _accordionId, year + "_" + _headerId, year + "_" + _contentId, year + "_" + _contentBodyId);
-
         
+        
+        
+        @* await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "auto", _rolodexContainerId, year + "_" + _accordionId);
+        await Task.Delay(300);
+        await JSRuntime.InvokeVoidAsync("onToggle", year + "_" + _accordionId, year + "_" + _headerId, year + "_" + _contentId, year + "_" + _contentBodyId);
+         *@
+
+         
+        
+        await JSRuntime.InvokeVoidAsync("onToggle", year + "_" + _accordionId, year + "_" + _headerId, year + "_" + _contentId, year + "_" + _contentBodyId);
+        await Task.Delay(300);
+        await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "auto", _rolodexContainerId, year + "_" + _accordionId);
+
     }
     
     @* protected override async Task OnInitializedAsync()
@@ -367,33 +399,50 @@
 }
 
 <script>
-    scrollToTop = function (year, behavior, accordionId, headerId, contentId, contentBodyId) {
+    @* scrollToTop = function (year, behavior, accordionId, headerId, contentId, contentBodyId) {
         
         var element = document.getElementById(year);
 
         if (element) {           
             
-            element.scrollIntoView({ behavior: behavior, block: 'start', inline: 'nearest' });
+            element.scrollIntoView({ behavior: behavior, block: 'nearest', inline: 'nearest' });            
             onToggle(year + "_" + accordionId, year + "_" + headerId, year + "_" + contentId, year + "_" + contentBodyId);
 
         }
-    }
+    } *@
 
-    function initializeScrollEvent(dotnetHelper, containerId, containerBodyId) {        
+    
+
+    function initializeScrollEvent(dotnetHelper, containerId, containerBodyId) { 
 
         var container = document.getElementById(containerId);
         var containerBody = document.getElementById(containerBodyId);
 
-        const scrollbar = document.querySelector('.re-calendar-accordion-scrollbar'); 
-        const thumb = document.querySelector('.re-calendar-accordion-thumb');        
+        const scrollbar = document.querySelector('.calendar-accordion-scrollbar'); 
+        const thumb = document.querySelector('.calendar-accordion-thumb');        
         thumb.style.top = `${71}px`; 
+
+        function handleScroll(event, targetContainer) {
+        const threshold = 0; // Adjust the threshold as needed
+
+        if (event.deltaY > 0) {
+            dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+        } else {
+            dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+        }
+
+        closeAllOpenAccordions(targetContainer.id);
+    }
 
 
         containerBody.addEventListener('wheel', function (event) {
+
+            event.preventDefault();
+
             const threshold = 0; // Adjust the threshold as needed
             //thumb.style.top = `${71}px`; 
 
-
+            
             if (event.deltaY > 0) {
                 //if (containerBody.scrollTop + containerBody.clientHeight >= containerBody.scrollHeight - threshold) {
                     dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
@@ -506,24 +555,42 @@
     }
 
     ////////////Accordion///////////////////////////////////
+
+    scrollToTop = function (year, behavior, containerId, elementId) {
+
+        var container = document.getElementById(containerId);
+        var element = document.getElementById(elementId);
+
+        if (container && element) {
+            // Calculate the position of the element relative to the container
+            var elementTop = element.offsetTop;
+            var containerTop = container.offsetTop;
+            var scrollPosition = elementTop - containerTop;
+
+            container.scrollTo({
+                top: scrollPosition,
+                behavior: 'smooth'
+            });
+        }
+    }
+
     onToggle = function (accordionId, headerId, contentId, contentBodyId) {
 
         var accordion = document.getElementById(accordionId);
         var header = document.getElementById(headerId);
         var content = document.getElementById(contentId);
-        var contentBody = document.getElementById(contentBodyId);        
+        var contentBody = document.getElementById(contentBodyId);  
 
-        if(accordion && header && content && contentBody){            
-            
+        if (accordion && header && content && contentBody) {
             if (contentBody.style.height == "" || contentBody.style.height == '0px') {
                 content.style.zIndex = '1';
                 contentBody.style.height = contentBody.scrollHeight + 'px';
             }
             else {
                 contentBody.style.height = '0px';
-                setTimeout(function () {                
+                setTimeout(function () {
                     content.style.zIndex = '-1';
-                }, 300);            
+                }, 300);
             }
         }
 
@@ -531,15 +598,15 @@
 
     closeAllOpenAccordions = function (containerId) {
 
-        // Get all elements with the class name 're-accordion'
+        // Get all elements with the class name 'accordion'
         var container = document.getElementById(containerId);
-        var accordionElements = container.getElementsByClassName('re-accordion');
+        var accordionElements = container.getElementsByClassName('accordion');
 
         // Iterate over all elements and set z-index and height if conditions are met
         for (var i = 0; i < accordionElements.length; i++) {
             var item = accordionElements[i];
-            var itemContent = item.querySelector('.re-accordion-content');
-            var itemContentBody = item.querySelector('.re-accordion-content-body');
+            var itemContent = item.querySelector('.accordion-content');
+            var itemContentBody = item.querySelector('.accordion-content-body');
 
             if (itemContent && itemContentBody) {
                 if (itemContent.style.zIndex == '1' && itemContentBody.style.height != '0px') {
@@ -553,5 +620,3 @@
 
 
 </script>
-
-

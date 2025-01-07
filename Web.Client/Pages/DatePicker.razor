@@ -5,9 +5,22 @@
 
 <h4>DatePicker</h4>
 
+
+<div style="height:2500px">
+
+    <div style="height: 1000px;"></div>
+
 <ReDatePicker class="re-input" Value="@selectedDate" ValueExpression="@(() => selectedDate)" ValueChanged="@((DateOnly? date) => selectedDate = date)" />
+
+<ReDatePicker class="re-input" Value="@selectedDate2" ValueExpression="@(() => selectedDate2)" ValueChanged="@((DateOnly? date) => selectedDate2 = date)" />
+
+<ReDatePicker class="re-input" Value="@selectedDate3" ValueExpression="@(() => selectedDate3)" ValueChanged="@((DateOnly? date) => selectedDate3 = date)" />
+
+</div>
 
 @code{
     private DateOnly? selectedDate = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly? selectedDate2 = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly? selectedDate3 = DateOnly.FromDateTime(DateTime.Now);
 }
 

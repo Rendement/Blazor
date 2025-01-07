@@ -473,78 +473,10 @@
 
     private void ToggleCalendarView()
     {
-        ToggleYearMonthView = !ToggleYearMonthView;
-        if (ToggleYearMonthView)
-        {
-            for (int i = currentYear - 20; i <= currentYear + 20; i++)
-            {
-                years.Add(i);
-            }
-            Task.Run(async () => await JSRuntime.InvokeVoidAsync("initializeScrollEvent", DotNetObjectReference.Create(this), calendarBodyId));
-        }else{
-            years.Clear();
-
-        }
+        ToggleYearMonthView = !ToggleYearMonthView;        
     }
 
-    private ElementReference calendarBodyRef;
     
-    private string calendarBodyId = Guid.NewGuid().ToString();
-    
-    private List<int> years = new List<int>();
-        
-
-    [JSInvokable]
-    public void LoadMoreYears()
-    {
-        AddMoreNextYears();        
-        StateHasChanged();
-    }
-
-    [JSInvokable]
-    public void LoadPreviousYears()
-    {
-        AddMorePreviousYears();        
-        StateHasChanged();
-    }
-
-    private void AddMoreNextYears()
-    {
-        int newEndYear = years[years.Count - 1] + 10;
-        for (int i = years[years.Count - 1] + 1; i <= newEndYear; i++)
-        {
-            years.Add(i);
-        }
-
-        //if (years.Count > 20)
-        //{
-
-            years.RemoveRange(0, 10);
-            
-        //}
-    }
-
-    private void AddMorePreviousYears()
-    {
-        int newStartYear = years[0] - 10;
-        for (int i = years[0] - 1; i >= newStartYear; i--)
-        {
-            years.Insert(0, i);
-        }
-
-        //if (years.Count > 20)
-        //{
-            years.RemoveRange(years.Count - 10, 10);
-        //}
-    }
-
-    private string _calendarRoloId = Guid.NewGuid().ToString();
-    private string _calendarRoloContainerId = Guid.NewGuid().ToString();
-    private string GetAbbreviatedMonth(int month)
-    {
-        return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month);
-
-    }
 
     private RenderFragment? CalendarFragment { get; set; }
 
@@ -618,7 +550,6 @@
         {
 
             builder.OpenComponent<CalendarYearAccordion>(0);
-                @* builder.AddAttribute(33, "class", "calendar-body"); *@
             builder.AddAttribute(1, "OnDateSelected", EventCallback.Factory.Create<CalendarDate>(this, (date) => {
                 currentYear = date.Year ?? DateTime.Now.Year;
                 currentMonth = date.Month ?? DateTime.Now.Month;  
@@ -735,28 +666,6 @@
     };
 
 }
-
-<script>
-    function initializeScrollEvent(dotNetHelper, id) {
-    
-    const calendarBody = document.getElementById(id);
-
-    
-
-
-    if (calendarBody) {
-        calendarBody.addEventListener('scroll', () => {
-            
-            if (calendarBody.scrollTop + calendarBody.clientHeight >= calendarBody.scrollHeight) {
-                dotNetHelper.invokeMethodAsync('LoadMoreYears');
-            } else if (calendarBody.scrollTop === 0) {
-                dotNetHelper.invokeMethodAsync('LoadPreviousYears');
-            }
-        });
-    };
-
-}
-</script>
 
 <style>
     .calendar {
@@ -969,5 +878,4 @@
     
 
 
-</style>       
-
+</style>     

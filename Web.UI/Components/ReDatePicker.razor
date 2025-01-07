@@ -651,23 +651,40 @@
 
 }
 
-<script>    
+<script>       
 
-    SetWrapperEventListener = (id) => {        
+    
 
-        const wrapperElement = document.getElementById(id);
+    SetWrapperEventListener = (id) => {  
+
+        document.addEventListener('scroll', (event) => {
+        
+            const calendarElement = document.getElementById(id).querySelector('.fe-datepicker-calendar');
+            if(calendarElement.classList.contains("calendar-show")){
+                calendarElement.classList.remove("calendar-show");
+            }
+
+        }); 
+
+        const wrapperElement = document.getElementById(id);        
 
         if(wrapperElement == null){
             return;
         }
+
+        wrapperElement.addEventListener('scroll', (event) => {
+
+            console.log(event);
+
+        });
 
         wrapperElement.addEventListener('focusout', (event) => {
 
             console.log(event.currentTarget, event.relatedTarget);
 
             const calendarElement = (event.target.classList.contains("fe-datepicker-calendar-btn") || event.target.classList.contains("calendar-header-action"));
-            const calendarHeader = (event.relatedTarget != null && (event.relatedTarget.classList.contains("calendar-header-action") ||
-                event.relatedTarget.classList.contains("calendar-day") ||
+            const calendarHeader = (event.relatedTarget != null && (event.relatedTarget.classList.contains("calendar-header-action") || event.relatedTarget.classList.contains("fe-datepicker-calendar") ||
+                event.relatedTarget.classList.contains("calendar-day") || event.relatedTarget.classList.contains("accordion-scroll-up") || event.relatedTarget.classList.contains("accordion-scroll-down") ||
                 event.relatedTarget.classList.contains("calendar-day-btn") ||
                 event.relatedTarget.classList.contains("calendar-footer-btn")));
             const calendarAfterToday = (event.target.classList.contains("fe-datepicker-calendar") && event.target.classList.contains("calendar-show") && event.relatedTarget == null);
@@ -678,14 +695,14 @@
 
            if((calendarElement && !calendarHeader) || calendarAfterToday || (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar)){               
 
-                @* const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
-                calendarElement.classList.remove("calendar-show");                *@
+                const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
+                calendarElement.classList.remove("calendar-show");               
 
             }
 
             if(event.relatedTarget == null){
                 const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
-                calendarElement.classList.remove("calendar-show"); 
+                //calendarElement.classList.remove("calendar-show"); 
             }
 
         });
