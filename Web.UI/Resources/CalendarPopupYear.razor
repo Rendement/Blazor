@@ -1,0 +1,580 @@
+@using System.Globalization
+@using web.ui.Components
+@using Web.UI.Classes
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+@* <link href="css/datepickercalendarpopup.css" rel="stylesheet" /> *@
+
+@CalendarPopupYearFragment
+
+@code{
+    [Parameter]
+    public int Year { get; set; } = DateTime.Now.Year;
+    [Parameter]
+    public EventCallback<CalendarDate> OnDateSelected { get; set; } 
+    private IList<int> years = new List<int>();
+    private int selectedYear;
+    private string _calenderyearContainerId = Guid.NewGuid().ToString();
+    private string _calenderyearBodyId = Guid.NewGuid().ToString();
+    private string _calendarMonthsId = Guid.NewGuid().ToString();
+    private string _calendaryearScrollbarUpId = Guid.NewGuid().ToString();
+    private string _calendaryearScrollbarDownId = Guid.NewGuid().ToString();
+    private string _calendaryearYearsContainerId = Guid.NewGuid().ToString();
+    private string _calendaryearYearTitleId = Guid.NewGuid().ToString();
+    private string _calendaryearYearMonthsContainerId = Guid.NewGuid().ToString();
+    private string _calendaryearYearMonthsBodyId = Guid.NewGuid().ToString();  
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        RenderComponent();
+
+
+        selectedYear = Year;
+        for (int i = selectedYear; i < selectedYear + 20; i++)
+        {
+            years.Add(i);
+        }   
+        await Task.Run(async () => 
+        {
+
+            
+
+            await JSRuntime.InvokeVoidAsync("initializeScrollEvent", DotNetObjectReference.Create(this), _calenderyearContainerId, _calenderyearBodyId);    
+            await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "auto", _calenderyearBodyId, Year + "_" + _calendaryearYearsContainerId);
+            await Task.Delay(300);
+            await JSRuntime.InvokeVoidAsync("onToggle", Year + "_" + _calendaryearYearsContainerId, Year + "_" + _calendaryearYearTitleId, Year + "_" + _calendaryearYearMonthsContainerId, Year + "_" + _calendaryearYearMonthsBodyId);
+            
+        });
+
+        
+
+    }
+
+    private void MonthSelected(int year, int month)
+    {
+        OnDateSelected.InvokeAsync(new CalendarDate(year, month));
+    }
+
+    private string GetAbbreviatedMonth(int month)
+    {
+        return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month);
+
+    }
+        
+    [JSInvokable]
+    public void LoadContainerMoreYears()
+    {
+        AddContainerMoreNextYears();
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void LoadContainerPreviousYears()
+    {
+        AddContainerMorePreviousYears();        
+        StateHasChanged();
+    }
+
+    private void AddPreviousOnClick()
+    {
+        JSRuntime.InvokeVoidAsync("closeAllOpenAccordions", _calenderyearBodyId);
+        Task.Delay(300);
+        AddContainerMorePreviousYears();
+    }
+
+    private void AddMoreOnClick()
+    {
+        JSRuntime.InvokeVoidAsync("closeAllOpenAccordions", _calenderyearBodyId);
+        Task.Delay(300);
+        AddContainerMoreNextYears();
+    }
+
+    private void AddContainerMoreNextYears()
+    {
+        int lastYear = years[years.Count - 1];
+        years.Add(lastYear + 1);
+        years.RemoveAt(0);        
+    }
+
+    private void AddContainerMorePreviousYears()
+    {
+        int firstYear = years[0];
+        years.Insert(0, firstYear - 1);
+        years.RemoveAt(years.Count - 1);
+    }    
+
+    private async Task ToggleYear(string year)
+    {
+
+        selectedYear = int.Parse(year);
+        await JSRuntime.InvokeVoidAsync("closeAllOpenAccordions", _calenderyearBodyId);        
+        await JSRuntime.InvokeVoidAsync("onToggle", year + "_" + _calendaryearYearsContainerId, year + "_" + _calendaryearYearTitleId, year + "_" + _calendaryearYearMonthsContainerId, year + "_" + _calendaryearYearMonthsBodyId);
+        await Task.Delay(300);
+        await JSRuntime.InvokeVoidAsync("scrollToTop", Year, "smooth", _calenderyearBodyId, year + "_" + _calendaryearYearsContainerId);
+        StateHasChanged();
+
+    } 
+
+    private RenderFragment? CalendarPopupYearFragment { get; set; }
+
+    private void RenderComponent() => CalendarPopupYearFragment = CreateComponent();
+
+    private RenderFragment CreateComponent() => builder =>
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "calendaryear-container");
+        builder.AddAttribute(2, "id", _calenderyearContainerId);
+
+        //Calendar Year Body
+        builder.OpenElement(3, "div");
+        builder.AddAttribute(4, "class", "calendaryear-body");
+        builder.AddAttribute(5, "id", _calenderyearBodyId);
+
+        @foreach(int year in years)
+        {
+            builder.OpenElement(3, "div");
+            builder.AddAttribute(4, "class", "calendaryear-years-container");
+            builder.AddAttribute(5, "id", year + "_" + _calendaryearYearsContainerId);
+
+            builder.OpenElement(6, "div");
+            builder.AddAttribute(7, "class", "calendaryear-year-title");
+            builder.AddAttribute(8, "id", year + "_" + _calendaryearYearTitleId);
+            builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, async () => await ToggleYear(year.ToString())));
+            builder.AddContent(10, year);
+            builder.CloseElement();
+
+            builder.OpenElement(11, "div");
+            builder.AddAttribute(12, "class", "calendaryear-year-months-container");
+            builder.AddAttribute(13, "id", year + "_" + _calendaryearYearMonthsContainerId);
+
+            builder.OpenElement(14, "div");
+            builder.AddAttribute(15, "class", "calendaryear-year-months-body");
+            builder.AddAttribute(16, "id", year + "_" + _calendaryearYearMonthsBodyId);
+
+            builder.OpenElement(17, "div");
+            builder.AddAttribute(18, "class", "calendaryear-year-months");
+
+            foreach (int month in Enumerable.Range(1, 12))
+            {
+                builder.OpenElement(19, "div");
+                builder.AddAttribute(20, "class", "calendaryear-year-month");
+                builder.AddAttribute(21, "onclick", EventCallback.Factory.Create(this, () => MonthSelected(year, month)));
+                builder.AddContent(22, GetAbbreviatedMonth(month));
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+        builder.CloseElement();
+        //End Calendar Year Body
+
+        //Scrollbar
+        builder.OpenElement(23, "div");
+        builder.AddAttribute(24, "class", "calenderyear-scrollbar-body");
+        builder.OpenElement(25, "div");
+        builder.AddAttribute(26, "class", "calenderyear-scrollbar-buttons");
+        builder.OpenElement(27, "button");
+        builder.AddAttribute(28, "onclick", EventCallback.Factory.Create(this, AddPreviousOnClick));
+        builder.AddAttribute(29, "type", "button");
+        builder.AddAttribute(30, "class", "calenderyear-scrollbar-up");
+        builder.AddAttribute(31, "id", _calendaryearScrollbarUpId);
+        builder.AddContent(32, "▲");
+        builder.CloseElement();
+        builder.OpenElement(33, "button");
+        builder.AddAttribute(34, "onclick", EventCallback.Factory.Create(this, AddMoreOnClick));
+        builder.AddAttribute(35, "type", "button");
+        builder.AddAttribute(36, "class", "calenderyear-scrollbar-down");
+        builder.AddAttribute(37, "id", _calendaryearScrollbarDownId);
+        builder.AddContent(38, "▼");
+        builder.CloseElement();
+        builder.CloseElement();
+        builder.OpenElement(39, "div");
+        builder.AddAttribute(40, "class", "calenderyear-scrollbar");
+        builder.OpenElement(41, "div");
+        builder.AddAttribute(42, "class", "calenderyear-scrollbar-thumb");
+        builder.CloseElement();
+        builder.CloseElement();
+        builder.CloseElement();
+        //End Scrollbar
+        
+        builder.CloseElement();
+    };
+
+}
+
+<script>    
+
+    function initializeScrollEvent(dotnetHelper, containerId, containerBodyId) { 
+
+        var container = document.getElementById(containerId);
+        var containerBody = document.getElementById(containerBodyId);
+
+        const scrollbar = document.querySelector('.calenderyear-scrollbar'); 
+        const thumb = document.querySelector('.calenderyear-scrollbar-thumb');        
+        thumb.style.top = `${71}px`; 
+
+        function handleScroll(event) {
+
+            if (event.deltaY > 0) {
+                dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+            } else {
+                dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+            }
+            closeAllOpenAccordions(containerBodyId);
+            
+        }      
+
+        containerBody.addEventListener('wheel', function (event) {
+
+            event.preventDefault();//keeps the whole page from scrolling            
+            handleScroll(event);
+            closeAllOpenAccordions(containerBodyId);
+
+        });
+
+        containerBody.addEventListener('scroll', function (event) { 
+
+            //handleScroll(event);
+
+        });
+
+        thumb.addEventListener('mousedown', (e) => { 
+            
+            const startY = e.clientY; 
+            const startTop = thumb.offsetTop; 
+            let previousTop = startTop;
+            let mousedownDirection = -1;
+            let scrollInterval;            
+            
+            const onMouseMove = (e) => {     
+
+                closeAllOpenAccordions(containerBodyId);
+                
+                const deltaY = e.clientY - startY; 
+                const newTop = Math.max(0, startTop + deltaY);
+
+                if(newTop + thumb.clientHeight <= scrollbar.clientHeight){
+                    
+                    thumb.style.top = `${newTop}px`; 
+                    const scrollPercent = newTop / (container.clientHeight - thumb.clientHeight); 
+                    containerBody.scrollTop = scrollPercent * (containerBody.scrollHeight - containerBody.clientHeight); 
+
+                    if (previousTop > newTop) {
+                            mousedownDirection = 0;
+                        } else if (previousTop < newTop) {
+                            mousedownDirection = 1;
+                        }
+
+                    previousTop = newTop;                    
+
+                }else {
+
+                    mousedownDirection = 1;
+
+                }
+
+            }; 
+                    
+            const onMouseUp = () => { 
+
+                clearInterval(scrollInterval);
+                mousedownDirection = -1;
+                thumb.style.top = `${71}px`; 
+                document.removeEventListener('mousemove', onMouseMove); 
+                document.removeEventListener('mouseup', onMouseUp); 
+                document.removeEventListener('mousedown', onMouseDown);                
+                
+            };            
+
+            const onMouseDown = () => { 
+                
+                scrollInterval = setInterval(() => {
+
+                    if(mousedownDirection === 0){
+                        dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+                    }else if(mousedownDirection === 1){
+                        dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+                    }
+
+                }, 200); 
+                                
+            };
+
+            document.addEventListener('mousemove', onMouseMove); 
+            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('mousedown', onMouseDown);
+                            
+        });  
+
+        ///////////////////Touch eventhandler/////////////////////////////
+        let startY;
+
+        containerBody.addEventListener('touchstart', function (event) {
+            startY = event.touches[0].clientY;
+        });
+
+        containerBody.addEventListener('touchmove', function (event) {
+            event.preventDefault(); // keeps the whole page from scrolling
+
+            const currentY = event.touches[0].clientY;
+            const deltaY = currentY - startY;
+
+            if (deltaY > 0) {
+                dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+            } else if (deltaY < 0) {                
+                dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+            }
+
+            startY = currentY; // Update startY for the next move event
+        });         
+
+        thumb.addEventListener('touchstart', (e) => { 
+
+            event.preventDefault();
+            
+            const startY = e.touches[0].clientY; 
+            const startTop = thumb.offsetTop; 
+            let previousTop = startTop;
+            let touchDirection = -1;
+            let scrollInterval;  
+
+            const onTouchMove = (e) => {
+
+                closeAllOpenAccordions(containerBodyId);
+
+                const deltaY = e.touches[0].clientY - startY; 
+                const newTop = Math.max(0, startTop + deltaY);
+
+                if(newTop + thumb.clientHeight <= scrollbar.clientHeight){
+                    thumb.style.top = `${newTop}px`; 
+                    const scrollPercent = newTop / (container.clientHeight - thumb.clientHeight); 
+                    containerBody.scrollTop = scrollPercent * (containerBody.scrollHeight - containerBody.clientHeight); 
+
+                    if (previousTop > newTop) {
+                        touchDirection = 0;
+                    } else if (previousTop < newTop) {
+                        touchDirection = 1;
+                    }
+
+                    previousTop = newTop;                    
+                } else {
+                    touchDirection = 1;
+                }
+
+            };
+
+            scrollInterval = setInterval(() => {
+
+                if(touchDirection === 0){
+                    dotnetHelper.invokeMethodAsync('LoadContainerPreviousYears');
+                }else if(touchDirection === 1){
+                    dotnetHelper.invokeMethodAsync('LoadContainerMoreYears');
+                }
+
+            }, 200); 
+
+            const onTouchEnd = (e) => {                
+                clearInterval(scrollInterval);
+                thumb.style.top = `${71}px`;
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
+            };
+
+            document.addEventListener('touchmove', onTouchMove);
+            document.addEventListener('touchend', onTouchEnd);
+                            
+        });   
+
+        //////////////////////////////////////////////////////////////////     
+
+    }
+
+    scrollToTop = function (year, behavior, containerId, elementId) {
+
+        var container = document.getElementById(containerId);
+        var element = document.getElementById(elementId);
+
+        if (container && element) {
+            // Calculate the position of the element relative to the container
+            var elementTop = element.offsetTop;
+            var containerTop = container.offsetTop;
+            var scrollPosition = elementTop - containerTop;
+
+            container.scrollTo({
+                top: scrollPosition,
+                behavior: 'smooth'
+            });
+        }
+
+    }
+
+    onToggle = function (accordionId, headerId, contentId, contentBodyId) {
+
+        var accordion = document.getElementById(accordionId);
+        var header = document.getElementById(headerId);
+        var content = document.getElementById(contentId);
+        var contentBody = document.getElementById(contentBodyId);  
+
+        if (accordion && header && content && contentBody) {
+            if (contentBody.style.height == "" || contentBody.style.height == '0px') {
+                content.style.zIndex = '1';
+                contentBody.style.height = contentBody.scrollHeight + 'px';
+            }
+            else {
+                contentBody.style.height = '0px';
+                setTimeout(function () {
+                    content.style.zIndex = '-1';
+                }, 300);
+            }
+        }
+
+    }
+
+    closeAllOpenAccordions = function (containerId) {
+        
+        var container = document.getElementById(containerId);
+        var months = container.getElementsByClassName('calendaryear-year-months-container');
+
+        // Iterate over all elements and set z-index and height if conditions are met
+        for (var i = 0; i < months.length; i++) {
+            var month = months[i];
+            month.style.zIndex = '-1';
+            var monthBody = month.querySelector('.calendaryear-year-months-body');
+            monthBody.style.height = '0px';
+        }
+
+    }
+
+</script>
+
+<style>
+
+    .calendaryear-container{
+
+        overflow: hidden;
+        padding: .5em;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: small;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        column-gap: .75em;
+        user-select: none;
+    }
+
+    .calendaryear-body{
+        overflow: hidden;
+        height: 17.5em;
+        width: 15.25em;
+    }
+
+    .calendaryear-year-title{
+        height: 2em;
+        cursor: pointer;
+        background-color: #dfdfdf;
+        border-bottom: 1px solid #fff;
+        padding: .3em;
+    }
+
+    .calendaryear-year-months{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #fff;
+        position: relative;
+    }
+
+    .calendaryear-year-months div{
+        width: calc(100% / 4);
+        cursor: pointer;
+        padding: .5em;
+    }
+
+    .calendaryear-year-months div:hover{
+        background-color: #f0f0f0;
+        border-radius: .25em;
+    }
+
+    .calendaryear-years-container {
+        position: relative;
+    }
+
+    .calendaryear-year-months-container {
+        position: relative;
+        overflow: hidden;
+        top: 0;
+        z-index: -1;
+    }  
+
+    .calendaryear-year-months-body {
+        position: relative;
+        transition: height 0.3s ease-in-out;
+        height: 0px;
+    }
+
+    .calenderyear-scrollbar{
+        position: relative; 
+        top: 1.75em; 
+        right: 0; 
+        width: 1em; 
+        height: 14em; 
+        background-color: #ddd;
+        border-radius: .25em;        
+    }
+
+    .calenderyear-scrollbar-thumb { 
+        position: relative; 
+        top: 0; 
+        width: 100%; 
+        height: calc(14em / 6); 
+        background-color: #888; 
+        cursor: pointer;
+        transition: top .3s ease-out;
+        border-radius: .25em;
+    }
+
+    .calenderyear-scrollbar-thumb:hover {
+        background-color: #666;
+    }
+
+    .calenderyear-scrollbar-buttons{
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 17.5em;
+    }
+
+    .calenderyear-scrollbar-up, .calenderyear-scrollbar-down {
+
+        position:absolute;        
+        border: none;
+        left:0;
+        padding:0;
+        border-radius: .25em;
+        font-size: .85em;
+        padding: .1em;
+
+    }
+
+    .calenderyear-scrollbar-up:hover, .calenderyear-scrollbar-down:hover {
+        background-color: #888;
+    }
+
+    .calenderyear-scrollbar-up {
+        top: 0; 
+            
+    }
+
+    .calenderyear-scrollbar-down {
+        bottom: 0;
+    }
+
+</style>

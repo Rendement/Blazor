@@ -8,20 +8,20 @@
 @inject IJSRuntime JSRuntime
 
 
-<div readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" class="@((FloatingLabel ? "fe-floating " : "") + "fe-datepicker-wrapper " + (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : "")) @(String.IsNullOrEmpty(FloatingClass) ? "" : " " + FloatingClass)" id="@_datepickerId">
+<div readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" class="@((FloatingLabel ? "re-floating " : "") + "re-datepicker-wrapper " + (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : "")) @(String.IsNullOrEmpty(FloatingClass) ? "" : " " + FloatingClass)" id="@_datepickerId">
 
-    <div class="fe-datepicker-container" currentvalue="@(String.IsNullOrEmpty(CurrentValueAsString) ? false : true)" >
+    <div class="re-datepicker-container" currentvalue="@(String.IsNullOrEmpty(CurrentValueAsString) ? false : true)" >
 
-        <div class="fe-datepicker-container-inputs" >
+        <div class="re-datepicker-container-inputs" >
 
             <input id="@_monthId" @key="_dateInput.Month.Id"
             onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Month, null, _dayId))"
             onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
-            placeholder="MM" 
+            placeholder="mm" 
             type="text" 
             maxlength="2" 
             pattern="[0-9]*" 
-            class="fe-datepicker-input" 
+            class="re-datepicker-input" 
             value="@_dateInput.Month.Value"
             @onchange="@(e => OnInputChange(_dateInput.Month, e?.Value?.ToString()))"
             onkeypress="return event.keyCode!=13"
@@ -34,11 +34,11 @@
             <input id="@_dayId" @key="_dateInput.Day.Id"
             onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Day, _monthId, _yearId))"
             onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
-            placeholder="DD" 
+            placeholder="dd" 
             type="text" 
             maxlength="2" 
             pattern="[0-9]*" 
-            class="fe-datepicker-input" 
+            class="re-datepicker-input" 
             value="@_dateInput.Day.Value"
             @onchange="@(e => OnInputChange(_dateInput.Day, e?.Value?.ToString()))"
             onkeypress="return event.keyCode!=13"
@@ -51,11 +51,11 @@
             <input id="@_yearId" @key="_dateInput.Year.Id"
             onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Year, _dayId, null))"
             onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
-            placeholder="YYYY" 
+            placeholder="yyyy" 
             type="text" 
             maxlength="4" 
             pattern="[0-9]*" 
-            class="fe-datepicker-input"
+            class="re-datepicker-input"
             min="@_dateInput.Year.Min"
             max="@_dateInput.Year.Max"
             value="@_dateInput.Year.Value"
@@ -67,14 +67,14 @@
 
         </div>
 
-        <div class="fe-datepicker-container-readonly">
-            <input style="border:none !important;" type="text" class="fe-datepicker-input-readonly" placeholder="@Label" readonly="true" value="@(CurrentValue.HasValue ? CurrentValue.Value.ToString("MM/dd/yyyy") : string.Empty)" />
+        <div class="re-datepicker-container-readonly">
+            <input style="border:none !important;" type="text" class="re-datepicker-input-readonly" placeholder="@Label" readonly="true" value="@(CurrentValue.HasValue ? CurrentValue.Value.ToString("MM/dd/yyyy") : string.Empty)" />
         </div>
 
         @if (_showCalendarButton)
         {
 
-            <button class="fe-datepicker-calendar-btn"
+            <button class="re-datepicker-calendar-btn"
             type="button"
             onkeydown="@((KeyboardEventArgs e) => OnCalendarButtonKeyDown(e))"
             onclick="@(() => CalendarBtnOnClick())">
@@ -92,13 +92,13 @@
         Max="@Max"
         Min="@Min"
         OnDateSelected="CalendarPopupDateSelected"
-        class="fe-datepicker-calendar top"
+        class="re-datepicker-calendar top"
         id="@_id"
         tabindex="0"
         ToggleAccordion="@_toggleAccordion"></CalendarPopup>
 
 
-    <div class="fe-label ">@Label</div>
+    <div class="re-label ">@Label</div>
 
 
 
@@ -659,7 +659,7 @@
 
         document.addEventListener('scroll', (event) => {
         
-            const calendarElement = document.getElementById(id).querySelector('.fe-datepicker-calendar');
+            const calendarElement = document.getElementById(id).querySelector('.re-datepicker-calendar');
             if(calendarElement.classList.contains("calendar-show")){
                 calendarElement.classList.remove("calendar-show");
             }
@@ -674,35 +674,25 @@
 
         wrapperElement.addEventListener('scroll', (event) => {
 
-            console.log(event);
+            //console.log(event);
 
         });
 
         wrapperElement.addEventListener('focusout', (event) => {
 
-            console.log(event.currentTarget, event.relatedTarget);
-
-            const calendarElement = (event.target.classList.contains("fe-datepicker-calendar-btn") || event.target.classList.contains("calendar-header-action"));
-            const calendarHeader = (event.relatedTarget != null && (event.relatedTarget.classList.contains("calendar-header-action") || event.relatedTarget.classList.contains("fe-datepicker-calendar") ||
-                event.relatedTarget.classList.contains("calendar-day") || event.relatedTarget.classList.contains("accordion-scroll-up") || event.relatedTarget.classList.contains("accordion-scroll-down") ||
+            const calendarElement = (event.target.classList.contains("re-datepicker-calendar-btn") || event.target.classList.contains("calendar-header-action"));
+            const calendarHeader = (event.relatedTarget != null && (event.relatedTarget.classList.contains("calendar-header-action") || event.relatedTarget.classList.contains("re-datepicker-calendar") ||
+                event.relatedTarget.classList.contains("calendar-day") || event.relatedTarget.classList.contains("calenderyear-scrollbar-up") || event.relatedTarget.classList.contains("calenderyear-scrollbar-down") ||
                 event.relatedTarget.classList.contains("calendar-day-btn") ||
                 event.relatedTarget.classList.contains("calendar-footer-btn")));
-            const calendarAfterToday = (event.target.classList.contains("fe-datepicker-calendar") && event.target.classList.contains("calendar-show") && event.relatedTarget == null);
-            const isCalendar = (event.relatedTarget != null && event.relatedTarget.classList.contains("fe-datepicker-calendar"));    
-
-            console.log((calendarElement && !calendarHeader), calendarAfterToday, (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar));
-            
+            const calendarAfterToday = (event.target.classList.contains("re-datepicker-calendar") && event.target.classList.contains("calendar-show") && event.relatedTarget == null);
+            const isCalendar = (event.relatedTarget != null && event.relatedTarget.classList.contains("re-datepicker-calendar"));    
 
            if((calendarElement && !calendarHeader) || calendarAfterToday || (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar)){               
 
-                const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
+                const calendarElement = wrapperElement.querySelector('.re-datepicker-calendar');
                 calendarElement.classList.remove("calendar-show");               
 
-            }
-
-            if(event.relatedTarget == null){
-                const calendarElement = wrapperElement.querySelector('.fe-datepicker-calendar');
-                //calendarElement.classList.remove("calendar-show"); 
             }
 
         });
@@ -816,11 +806,11 @@
 
 <style>
 
-    .fe-floating.fe-datepicker-wrapper{
+    .re-floating.re-datepicker-wrapper{
         min-height:3.6em !important;
     }
 
-    .fe-datepicker-wrapper {
+    .re-datepicker-wrapper {
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
@@ -830,7 +820,7 @@
         // max-height: 3.6em !important;
     }
 
-    .fe-datepicker-calendar {
+    .re-datepicker-calendar {
         display: none;
         position: absolute;
         left: 0;
@@ -848,14 +838,14 @@
 
     
 
-    .fe-datepicker-container {
+    .re-datepicker-container {
         width: 100%;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
     }
 
-    .fe-datepicker-container-inputs {
+    .re-datepicker-container-inputs {
         display:flex;
         flex-direction: row;
         align-content:flex-start;
@@ -864,26 +854,26 @@
         min-width: 7em;
     }
 
-    .fe-datepicker-input, .fe-datepicker-input-readonly {
+    .re-datepicker-input, .re-datepicker-input-readonly {
         width: fit-content;
         field-sizing: content;
         border: none !important;
         border-radius: .25em;
     }
 
-    .fe-datepicker-input{
+    .re-datepicker-input{
         max-width: 2em;
     }
 
-    .fe-datepicker-input:not([readonly]):last-child{
+    .re-datepicker-input:not([readonly]):last-child{
         max-width:3em;
     }
 
-    .fe-datepicker-input:focus {
+    .re-datepicker-input:focus {
         outline: none;
     }
 
-    .fe-datepicker-calendar-btn {
+    .re-datepicker-calendar-btn {
         border: none;
         background: none;
     }
@@ -892,76 +882,76 @@
         display: block !important;
     }
 
-    .fe-datepicker-calendar-toggle {
+    .re-datepicker-calendar-toggle {
         display: none !important;
     }
 
     /* floating label section */
-    .fe-floating.fe-datepicker-wrapper:focus-within {
+    .re-floating.re-datepicker-wrapper:focus-within {
         outline: none;
-        box-shadow: var(--fe-box-shadow);
+        box-shadow: var(--re-box-shadow);
     }
 
-    .fe-floating.fe-datepicker-wrapper > .fe-label {
+    .re-floating.re-datepicker-wrapper > .re-label {
         position: absolute;
         top: 0;
         left: 0;
         font-size: .75em;
         color: gray;
-        background-color: var(--fe-bg);
+        background-color: var(--re-bg);
         /* opacity: 0;*/
         z-index: 1;
         transition: all .2s ease-in-out;
-        border-radius: var(--fe-border-radius);
+        border-radius: var(--re-border-radius);
         -moz-border-radius: inherit;
         -webkit-border-radius: inherit;
     }
 
-    .fe-floating.fe-datepicker-wrapper:focus-within > .fe-label {
+    .re-floating.re-datepicker-wrapper:focus-within > .re-label {
         top: -.6rem;
         font-size: .75em;
-        background-color: var(--fe-bg);
+        background-color: var(--re-bg);
         opacity: 1;
         z-index: 1;
-        color: var(--fe-color);
-        border-radius: var(--fe-border-radius);
+        color: var(--re-color);
+        border-radius: var(--re-border-radius);
         -moz-border-radius: inherit;
         -webkit-border-radius: inherit;
     }
 
-    .fe-datepicker-container-readonly{
+    .re-datepicker-container-readonly{
         display: none;        
     }
 
-    .fe-datepicker-container-readonly > .fe-datepicker-input {
+    .re-datepicker-container-readonly > .re-datepicker-input {
         width: 100%;
         border: none;
         background-color: transparent;
         text-align: center;
-        color: var(--fe-color-readonly);
+        color: var(--re-color-readonly);
     }
 
-    .fe-floating.fe-datepicker-wrapper[readonly] > .fe-datepicker-container > .fe-datepicker-container-inputs{
+    .re-floating.re-datepicker-wrapper[readonly] > .re-datepicker-container > .re-datepicker-container-inputs{
         display:none;
     }
 
-    .fe-floating.fe-datepicker-wrapper[readonly] > .fe-datepicker-container > .fe-datepicker-container-readonly {
+    .re-floating.re-datepicker-wrapper[readonly] > .re-datepicker-container > .re-datepicker-container-readonly {
         display: flex;
     }    
 
-     .fe-floating.fe-datepicker-wrapper:has(.fe-datepicker-container[currentvalue]) > .fe-label {
+     .re-floating.re-datepicker-wrapper:has(.re-datepicker-container[currentvalue]) > .re-label {
         top: -.6rem;
         font-size: .75em;
-        background-color: var(--fe-bg);
+        background-color: var(--re-bg);
         opacity: 1;
         z-index: 1;
-        color: var(--fe-color);
-        border-radius: var(--fe-border-radius);
+        color: var(--re-color);
+        border-radius: var(--re-border-radius);
         -moz-border-radius: inherit;
         -webkit-border-radius: inherit;
     }
 
-    .fe-floating.fe-datepicker-wrapper[readonly]:has(.fe-datepicker-container:not([currentvalue])) > .fe-label {
+    .re-floating.re-datepicker-wrapper[readonly]:has(.re-datepicker-container:not([currentvalue])) > .re-label {
         display:none;
     }
 

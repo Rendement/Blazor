@@ -9,8 +9,6 @@
 
 @code {
 
-
-
     [Parameter]
     public int? Day { get; set; } = null;
 
@@ -30,10 +28,7 @@
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
     [Parameter]
-    public EventCallback<CalendarDate> OnDateSelected { get; set; }
-
-   
-
+    public EventCallback<CalendarDate> OnDateSelected { get; set; } 
 
     private int currentYear { get; set; } = DateTime.Now.Year;
     private int currentMonth { get; set; } = DateTime.Now.Month;
@@ -42,7 +37,6 @@
 
     private int _minYear;
     private int _maxYear = DateTime.MaxValue.Year;
-
 
     private DateTime firstDayOfMonth => new DateTime(currentYear, currentMonth, 1);
     private DayOfWeek firstDayOfWeek => firstDayOfMonth.DayOfWeek;
@@ -66,7 +60,6 @@
         InitializeMinMaxYears();
         SetCalendarOnInit(Year, Month, Day);
         RenderComponent();
-
         
     }
 
@@ -549,7 +542,7 @@
         if (ToggleYearMonthView)
         {
 
-            builder.OpenComponent<CalendarYearAccordion>(0);
+            builder.OpenComponent<CalendarPopupYear>(0);
             builder.AddAttribute(1, "OnDateSelected", EventCallback.Factory.Create<CalendarDate>(this, (date) => {
                 currentYear = date.Year ?? DateTime.Now.Year;
                 currentMonth = date.Month ?? DateTime.Now.Month;  
