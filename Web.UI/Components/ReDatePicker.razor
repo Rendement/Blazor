@@ -7,105 +7,9 @@
 @using Web.UI.Classes
 @inject IJSRuntime JSRuntime
 
-
-<div readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" class="@((FloatingLabel ? "re-floating " : "") + "re-datepicker-wrapper " + (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : "")) @(String.IsNullOrEmpty(FloatingClass) ? "" : " " + FloatingClass)" id="@_datepickerId">
-
-    <div class="re-datepicker-container" currentvalue="@(String.IsNullOrEmpty(CurrentValueAsString) ? false : true)" >
-
-        <div class="re-datepicker-container-inputs" >
-
-            <input id="@_monthId" @key="_dateInput.Month.Id"
-            onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Month, null, _dayId))"
-            onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
-            placeholder="mm" 
-            type="text" 
-            maxlength="2" 
-            pattern="[0-9]*" 
-            class="re-datepicker-input" 
-            value="@_dateInput.Month.Value"
-            @onchange="@(e => OnInputChange(_dateInput.Month, e?.Value?.ToString()))"
-            onkeypress="return event.keyCode!=13"
-            oninput="ValidateInput(event)"
-            onfocus="@(() => InputFocusIn(_monthId))"
-            readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" />
-
-            <span class="non-selectable" tabindex="-1">/</span>
-
-            <input id="@_dayId" @key="_dateInput.Day.Id"
-            onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Day, _monthId, _yearId))"
-            onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
-            placeholder="dd" 
-            type="text" 
-            maxlength="2" 
-            pattern="[0-9]*" 
-            class="re-datepicker-input" 
-            value="@_dateInput.Day.Value"
-            @onchange="@(e => OnInputChange(_dateInput.Day, e?.Value?.ToString()))"
-            onkeypress="return event.keyCode!=13"
-            oninput="ValidateInput(event)"
-            onfocus="@(() => InputFocusIn(_dayId))"
-            readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" />
-
-            <span class="non-selectable" tabindex="-1">/</span>
-
-            <input id="@_yearId" @key="_dateInput.Year.Id"
-            onkeydown="@((KeyboardEventArgs e) => OnKeyDown(e, _dateInput.Year, _dayId, null))"
-            onkeyup="@((KeyboardEventArgs e) => OnKeyUp(e))"
-            placeholder="yyyy" 
-            type="text" 
-            maxlength="4" 
-            pattern="[0-9]*" 
-            class="re-datepicker-input"
-            min="@_dateInput.Year.Min"
-            max="@_dateInput.Year.Max"
-            value="@_dateInput.Year.Value"
-            @onchange="@(e => OnInputChange(_dateInput.Year, e?.Value?.ToString()))"
-            onkeypress="return event.keyCode!=13"
-            oninput="ValidateInput(event)"
-            onfocus="@(() => InputFocusIn(_yearId))"
-            readonly="@(AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false)" /> 
-
-        </div>
-
-        <div class="re-datepicker-container-readonly">
-            <input style="border:none !important;" type="text" class="re-datepicker-input-readonly" placeholder="@Label" readonly="true" value="@(CurrentValue.HasValue ? CurrentValue.Value.ToString("MM/dd/yyyy") : string.Empty)" />
-        </div>
-
-        @if (_showCalendarButton)
-        {
-
-            <button class="re-datepicker-calendar-btn"
-            type="button"
-            onkeydown="@((KeyboardEventArgs e) => OnCalendarButtonKeyDown(e))"
-            onclick="@(() => CalendarBtnOnClick())">
-                <i class="fa-regular fa-calendar"></i>
-            </button> 
-
-        }
-
-    </div>
-
-    <CalendarPopup 
-        Day="@(string.IsNullOrEmpty(_dateInput.Day.Value) ? (int?)null : int.Parse(_dateInput.Day.Value))"
-        Month="@(string.IsNullOrEmpty(_dateInput.Month.Value) ? (int?)null : int.Parse(_dateInput.Month.Value))"
-        Year="@(string.IsNullOrEmpty(_dateInput.Year.Value) ? (int?)null : int.Parse(_dateInput.Year.Value))"
-        Max="@Max"
-        Min="@Min"
-        OnDateSelected="CalendarPopupDateSelected"
-        class="re-datepicker-calendar top"
-        id="@_id"
-        tabindex="0"
-        ToggleAccordion="@_toggleAccordion"></CalendarPopup>
-
-
-    <div class="re-label ">@Label</div>
-
-
-
-</div>
+@DatepickerFragment
 
 @code {
-
 
     [Parameter]
     public bool FloatingLabel { get; set; }
@@ -151,12 +55,17 @@
 
     private void CalendarBtnOnClick(){
 
-        _toggleAccordion = !_toggleAccordion;
+        _toggleCalendarPopup = !_toggleCalendarPopup;
         JSRuntime.InvokeVoidAsync("CalendarButtonOnClick", _id, _datepickerId);
     }
 
     protected override async Task OnInitializedAsync()
-    {        
+    {       
+
+        RenderMonthComponent(); 
+        RenderDayComponent();
+        RenderYearComponent();
+        RenderDatepickerComponent();
         OnInitilizedDatePicker();
         await base.OnInitializedAsync();
         await Task.Delay(1000);
@@ -645,9 +554,163 @@
         HighlightText(id);
     }  
 
-    private bool _toggleAccordion = false;  
+    private bool _toggleCalendarPopup = false;  
 
-    
+    private RenderFragment? MonthFragment { get; set; }
+
+    private void RenderMonthComponent() => MonthFragment = CreateMonthComponent();
+
+    private RenderFragment CreateMonthComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "id", _monthId);
+        builder.AddAttribute(2, "key", _dateInput.Month.Id);
+        builder.AddAttribute(2, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, e => OnKeyDown(e, _dateInput.Month, null, _dayId)));
+        builder.AddAttribute(3, "onkeyup", EventCallback.Factory.Create<KeyboardEventArgs>(this, e => OnKeyUp(e)));
+        builder.AddAttribute(4, "placeholder", "mm");
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "maxlength", "2");
+        builder.AddAttribute(7, "pattern", "[0-9]*");
+        builder.AddAttribute(8, "class", "re-datepicker-input");
+        builder.AddAttribute(9, "value", _dateInput.Month.Value);
+        builder.AddAttribute(10, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnInputChange(_dateInput.Month, e?.Value?.ToString())));
+        builder.AddAttribute(11, "onkeypress", "return event.keyCode!=13");
+        builder.AddAttribute(12, "oninput", "ValidateInput(event)");
+        builder.AddAttribute(13, "onfocus", EventCallback.Factory.Create(this, () => InputFocusIn(_monthId)));
+        builder.AddAttribute(14, "readonly", AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false);
+        builder.CloseElement();
+
+    };
+
+    private RenderFragment? DayFragment { get; set; }
+
+    private void RenderDayComponent() => DayFragment = CreateDayComponent();
+
+    private RenderFragment CreateDayComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "id", _dayId);
+        builder.AddAttribute(2, "key", _dateInput.Day.Id);
+        builder.AddAttribute(2, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, e => OnKeyDown(e, _dateInput.Day, _monthId, _yearId)));
+        builder.AddAttribute(3, "onkeyup", EventCallback.Factory.Create<KeyboardEventArgs>(this, e => OnKeyUp(e)));
+        builder.AddAttribute(4, "placeholder", "dd");
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "maxlength", "2");
+        builder.AddAttribute(7, "pattern", "[0-9]*");
+        builder.AddAttribute(8, "class", "re-datepicker-input");
+        builder.AddAttribute(9, "value", _dateInput.Day.Value);
+        builder.AddAttribute(10, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnInputChange(_dateInput.Day, e?.Value?.ToString())));
+        builder.AddAttribute(11, "onkeypress", "return event.keyCode!=13");
+        builder.AddAttribute(12, "oninput", "ValidateInput(event)");
+        builder.AddAttribute(13, "onfocus", EventCallback.Factory.Create(this, () => InputFocusIn(_dayId)));
+        builder.AddAttribute(14, "readonly", AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false);
+        builder.CloseElement();
+
+    };
+
+    private RenderFragment? YearFragment { get; set; }
+
+    private void RenderYearComponent() => YearFragment = CreateYearComponent();
+
+    private RenderFragment CreateYearComponent() => builder =>
+    {
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "id", _yearId);
+        builder.AddAttribute(2, "key", _dateInput.Year.Id);
+        builder.AddAttribute(2, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, e => OnKeyDown(e, _dateInput.Year, _dayId, null)));
+        builder.AddAttribute(3, "onkeyup", EventCallback.Factory.Create<KeyboardEventArgs>(this, e => OnKeyUp(e)));
+        builder.AddAttribute(4, "placeholder", "yyyy");
+        builder.AddAttribute(5, "type", "text");
+        builder.AddAttribute(6, "maxlength", "4");
+        builder.AddAttribute(7, "pattern", "[0-9]*");
+        builder.AddAttribute(8, "class", "re-datepicker-input");
+        builder.AddAttribute(9, "value", _dateInput.Year.Value);
+        builder.AddAttribute(10, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnInputChange(_dateInput.Year, e?.Value?.ToString())));
+        builder.AddAttribute(11, "onkeypress", "return event.keyCode!=13");
+        builder.AddAttribute(12, "oninput", "ValidateInput(event)");
+        builder.AddAttribute(13, "onfocus", EventCallback.Factory.Create(this, () => InputFocusIn(_yearId)));
+        builder.AddAttribute(14, "readonly", AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false);
+        builder.CloseElement();
+
+    };
+
+    private RenderFragment? DatepickerFragment { get; set; }
+
+    private void RenderDatepickerComponent() => DatepickerFragment = CreateDatepickerComponent();
+
+    private RenderFragment CreateDatepickerComponent() => builder =>
+    {
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "readonly", AdditionalAttributes != null && AdditionalAttributes.ContainsKey("readonly") ? AdditionalAttributes["readonly"] : false);
+        builder.AddAttribute(2, "class", (FloatingLabel ? "re-floating " : "") + "re-datepicker-wrapper " + (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("class") ? AdditionalAttributes["class"] : "") + (String.IsNullOrEmpty(FloatingClass) ? "" : " " + FloatingClass));
+        builder.AddAttribute(3, "id", _datepickerId);
+        builder.OpenElement(4, "div");
+        builder.AddAttribute(5, "class", "re-datepicker-container");
+        builder.AddAttribute(6, "currentvalue", String.IsNullOrEmpty(CurrentValueAsString) ? false : true);
+        builder.OpenElement(7, "div");
+        builder.AddAttribute(8, "class", "re-datepicker-container-inputs");
+        builder.AddContent(9, MonthFragment);
+        builder.OpenElement(10, "span");
+        builder.AddAttribute(11, "class", "non-selectable");
+        builder.AddAttribute(12, "tabindex", -1);
+        builder.AddContent(13, "/");
+        builder.CloseElement();
+        builder.AddContent(14, DayFragment);
+        builder.OpenElement(15, "span");
+        builder.AddAttribute(16, "class", "non-selectable");
+        builder.AddAttribute(17, "tabindex", -1);
+        builder.AddContent(18, "/");
+        builder.CloseElement();
+        builder.AddContent(19, YearFragment);
+        builder.CloseElement();
+        builder.OpenElement(20, "div");
+        builder.AddAttribute(21, "class", "re-datepicker-container-readonly");
+        builder.OpenElement(22, "input");
+        builder.AddAttribute(23, "style", "border:none !important;");
+        builder.AddAttribute(24, "type", "text");
+        builder.AddAttribute(25, "class", "re-datepicker-input-readonly");
+        builder.AddAttribute(26, "placeholder", Label);
+        builder.AddAttribute(27, "readonly", true);
+        builder.AddAttribute(28, "value", CurrentValue.HasValue ? CurrentValue.Value.ToString("MM/dd/yyyy") : string.Empty);
+        builder.CloseElement();
+        builder.CloseElement();
+
+        if (_showCalendarButton)
+        {
+            builder.OpenElement(29, "button");
+            builder.AddAttribute(30, "class", "re-datepicker-calendar-btn");
+            builder.AddAttribute(31, "type", "button");
+            builder.AddAttribute(32, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, OnCalendarButtonKeyDown));
+            builder.AddAttribute(33, "onclick", EventCallback.Factory.Create(this, CalendarBtnOnClick));
+            builder.OpenElement(34, "i");
+            builder.AddAttribute(35, "class", "fa-regular fa-calendar");
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+
+        builder.OpenComponent<CalendarPopup>(0);
+        builder.AddAttribute(1, "Day", string.IsNullOrEmpty(_dateInput.Day.Value) ? (int?)null : int.Parse(_dateInput.Day.Value));
+        builder.AddAttribute(2, "Month", string.IsNullOrEmpty(_dateInput.Month.Value) ? (int?)null : int.Parse(_dateInput.Month.Value));
+        builder.AddAttribute(3, "Year", string.IsNullOrEmpty(_dateInput.Year.Value) ? (int?)null : int.Parse(_dateInput.Year.Value));
+        builder.AddAttribute(4, "Max", Max);
+        builder.AddAttribute(5, "Min", Min);
+        builder.AddAttribute(6, "OnDateSelected", EventCallback.Factory.Create<CalendarDate>(this, CalendarPopupDateSelected));
+        builder.AddAttribute(7, "class", "re-datepicker-calendar top");
+        builder.AddAttribute(8, "id", _id);
+        builder.AddAttribute(9, "tabindex", 0);
+        builder.AddAttribute(10, "ToggleAccordion", _toggleCalendarPopup);
+        builder.CloseComponent();
+
+        builder.OpenElement(11, "div");
+        builder.AddAttribute(12, "class", "re-label ");
+        builder.AddContent(13, Label);
+        builder.CloseElement();
+
+        builder.CloseElement();
+    };
 
 }
 

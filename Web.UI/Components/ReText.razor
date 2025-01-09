@@ -1,11 +1,16 @@
 @inherits Microsoft.AspNetCore.Components.Forms.InputText
 @using Web.UI.Classes
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
 
 @TextContent
 
 @code {   
 
     private TextModifier textModifier = new TextModifier();
+
+    private string _id = Guid.NewGuid().ToString();
 
     [Parameter]
     public bool ToUpper { get; set; }
@@ -18,6 +23,9 @@
     {
         builder.OpenElement(0, "input");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
+
+        builder.AddAttribute(2, "id", _id);
+
         if (!string.IsNullOrEmpty(NameAttributeValue))
         {
             builder.AddAttribute(2, "name", NameAttributeValue);
@@ -30,7 +38,6 @@
         builder.AddAttribute(5, "value", CurrentValueAsString);
 
         builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = FormatValueAsString(__value), CurrentValueAsString));
-
         
         builder.SetUpdatesAttributeName("value");
         builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
@@ -38,12 +45,13 @@
     };
 
     private void RenderComponent() => TextContent = CreateComponent();
-
+    
     protected override async Task OnParametersSetAsync()
     {
-
+        
         RenderComponent();
         await base.OnParametersSetAsync();
+        await Task.Run(async () => { await JSRuntime.InvokeVoidAsync("onKeyDown", _id, "Enter");  });       
 
     }
     
@@ -57,3 +65,24 @@
     }
     
 }
+
+<script>
+
+    onKeyDown = (id, key) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('keydown', function (e) {
+                //console.log(`Key pressed: ${e.key}`);
+                if (e.key === key) { // Change "Enter" to any key you want to prevent
+                    e.preventDefault();
+                    //alert(`Prevented default action for key: ${e.key}`);
+                }
+            });
+        } else {
+            //console.error(`Element with id ${id} not found.`);
+        }
+    }
+
+    
+
+</script>

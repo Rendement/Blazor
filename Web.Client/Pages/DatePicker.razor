@@ -14,7 +14,9 @@
 
 <ReDatePicker class="re-input" Value="@selectedDate2" ValueExpression="@(() => selectedDate2)" ValueChanged="@((DateOnly? date) => selectedDate2 = date)" />
 
-<ReDatePicker class="re-input" Value="@selectedDate3" ValueExpression="@(() => selectedDate3)" ValueChanged="@((DateOnly? date) => selectedDate3 = date)" />
+@* <ReDatePicker class="re-input" Value="@selectedDate3" ValueExpression="@(() => selectedDate3)" ValueChanged="@((DateOnly? date) => selectedDate3 = date)" /> *@
+
+<ReDatePicker class="re-input" @bind-Value="@selectedDate3" />
 
 </div>
 
