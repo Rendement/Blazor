@@ -75,6 +75,7 @@
                 //console.log(`Key pressed: ${e.key}`);
                 if (e.key === key) { // Change "Enter" to any key you want to prevent
                     e.preventDefault();
+                    performTab(element);   
                     //alert(`Prevented default action for key: ${e.key}`);
                 }
             });
@@ -83,6 +84,16 @@
         }
     }
 
+    function performTab(element) {
+    const focusableElements = 'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+    const elements = Array.from(document.querySelectorAll(focusableElements))
+        .filter(el => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden'));
+
+    const index = elements.indexOf(element);
+    if (index > -1 && index < elements.length - 1) {
+        elements[index + 1].focus();
+    }
+}
     
 
 </script>
