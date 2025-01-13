@@ -754,7 +754,7 @@
            if((calendarElement && !calendarHeader) || calendarAfterToday || (!calendarAfterToday && !calendarHeader && !calendarElement && !isCalendar)){               
 
                 const calendarElement = wrapperElement.querySelector('.re-datepicker-calendar');
-                calendarElement.classList.remove("calendar-show");               
+                //calendarElement.classList.remove("calendar-show");               
 
             }
 
@@ -1019,10 +1019,38 @@
     }
 
     .non-selectable {
-    user-select: none; /* Standard syntax */
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* Internet Explorer/Edge */
-}
+        user-select: none; /* Standard syntax */
+        -webkit-user-select: none; /* Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+    }
+
+    @* @@media (max-width: 600px) {
+        .calendar {
+            position: fixed;
+            width: 100%;
+            left: 0;
+            z-index: 9999;
+        }
+        .calendar.top {
+            top: calc(100% - 20em) !important;
+        }
+        .calendar.bottom {
+            top: 10em !important;
+        }
+
+        .calendaryear-body{
+            width: calc(100% - 1em) !important;
+            height: 15.5em !important;
+        }
+
+        .calenderyear-scrollbar{
+            height: 12em !important;
+        }
+
+        .calenderyear-scrollbar-buttons{
+            height: 15.5em !important;
+        }
+    } *@
 
 </style>

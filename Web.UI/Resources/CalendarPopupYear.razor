@@ -215,8 +215,13 @@
         var containerBody = document.getElementById(containerBodyId);
 
         const scrollbar = document.querySelector('.calenderyear-scrollbar'); 
-        const thumb = document.querySelector('.calenderyear-scrollbar-thumb');        
-        thumb.style.top = `${71}px`; 
+        const thumb = document.querySelector('.calenderyear-scrollbar-thumb'); 
+
+        //set thumbHeight starting point
+        const scrollBarHeight = scrollbar.clientHeight;
+        const thumbHeight = thumb.clientHeight;
+        let thumbStartHeight = scrollBarHeight / 2 - thumbHeight / 2;
+        thumb.style.top = `${thumbStartHeight}px`; 
 
         function handleScroll(event) {
 
@@ -284,7 +289,7 @@
 
                 clearInterval(scrollInterval);
                 mousedownDirection = -1;
-                thumb.style.top = `${71}px`; 
+                thumb.style.top = `${thumbStartHeight}px`; 
                 document.removeEventListener('mousemove', onMouseMove); 
                 document.removeEventListener('mouseup', onMouseUp); 
                 document.removeEventListener('mousedown', onMouseDown);                
@@ -380,7 +385,7 @@
 
             const onTouchEnd = (e) => {                
                 clearInterval(scrollInterval);
-                thumb.style.top = `${71}px`;
+                thumb.style.top = `${thumbStartHeight}px`;
                 document.removeEventListener('touchmove', onTouchMove);
                 document.removeEventListener('touchend', onTouchEnd);
             };
