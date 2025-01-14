@@ -57,7 +57,7 @@
 
         _toggleCalendarPopup = !_toggleCalendarPopup;
         JSRuntime.InvokeVoidAsync("CalendarButtonOnClick", _id, _datepickerId);
-    }
+    }    
 
     protected override async Task OnInitializedAsync()
     {       
@@ -72,6 +72,15 @@
         await JSRuntime.InvokeVoidAsync("SetWrapperEventListener", _datepickerId);
 
     }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        OnInitilizedDatePicker();
+        SetCurrentValue();
+        base.OnParametersSet();
+    }
+
+
 
     private void OnInitilizedDatePicker()
     {
@@ -714,16 +723,53 @@
 
 }
 
-<script>       
+<script>   
+
+
+    
 
     
 
     SetWrapperEventListener = (id) => {  
 
+        let windowWidth = window.innerWidth;
+
+        window.addEventListener('resize', (event) => {
+
+            const calendarElement = document.getElementById(id)?.querySelector('.re-datepicker-calendar');
+            windowWidth = window.innerWidth;
+
+            if(windowWidth <= 600){
+                
+                if(calendarElement?.classList.contains("top")){
+                    calendarElement.style.top = "none";
+                    calendarElement.style.bottom = "none";
+                    calendarElement.classList.add("mobile");
+                }
+
+            }else{                
+                
+                if(calendarElement?.classList.contains("mobile")){
+                    calendarElement.classList.remove("mobile");
+                }
+
+                if(calendarElement?.classList.contains("top")){
+                    calendarElement.style.top = "";
+                    calendarElement.style.bottom = "";
+                }else{
+                    calendarElement.style.top = "";
+                    calendarElement.style.bottom = "";
+                }
+
+            }
+
+        });
+
+        
         document.addEventListener('scroll', (event) => {
         
-            const calendarElement = document.getElementById(id).querySelector('.re-datepicker-calendar');
-            if(calendarElement.classList.contains("calendar-show")){
+            const calendarElement = document.getElementById(id)?.querySelector('.re-datepicker-calendar');
+            if(calendarElement?.classList.contains("calendar-show")){
                 calendarElement.classList.remove("calendar-show");
             }
 
@@ -796,6 +842,7 @@
         const wrapper = document.getElementById(wrpId);
         const calendar = document.getElementById(calId);
         const docHeight = window.innerHeight;
+        const docWidth = window.innerWidth;
 
         setTimeout(function(){            
 
@@ -812,6 +859,26 @@
                 }else{
                     
                     calendar.classList.replace("top", "bottom");
+                }
+
+                if(docWidth <= 600){
+
+                    calendar.classList.add("mobile");
+
+                    if(calendar.classList.contains("top")){
+                        
+                        calendar.style.top = wrapper.getClientRects()[0].bottom + "px";
+
+                    }else{
+                        calendar.style.top = (wrapper.getClientRects()[0].top - (calendar.getClientRects()[0].height) / 2) + "px";
+                    }
+
+                }else{
+
+                    calendar.classList.remove("mobile");
+                    calendar.style.top = "none";
+                    calendar.style.bottom = "none";
+                    
                 }
 
             }else{
@@ -899,7 +966,11 @@
         bottom: 100%;
     }
 
-    
+    .mobile{
+        width: 100%;
+        position: fixed;        
+        left: 0;
+    }
 
     .re-datepicker-container {
         width: 100%;
